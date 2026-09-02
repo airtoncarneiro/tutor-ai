@@ -334,6 +334,10 @@ round-trip persistence test passes.
 
 # Phase 4 — LLM Integration
 
+## Current implementation status
+
+The Phase 4 boundary is implemented and validated with a real Gemini API call. The configured route is Google AI Studio's OpenAI-compatible endpoint, accessed with the `openai` Python SDK. The implementation uses Chat Completions, JSON structured responses and local function tool calls. The API key is loaded from `LLM_API_KEY` and must not be committed.
+
 ## TASK-040 — Prompt loader
 
 Load:

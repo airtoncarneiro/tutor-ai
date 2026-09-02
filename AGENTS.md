@@ -236,6 +236,19 @@ Prefer:
 - migrations for the `tutor` schema;
 - automated tests.
 
+## Current LLM implementation
+
+The current V1 implementation uses Google AI Studio's Gemini API through its OpenAI-compatible endpoint and the Python `openai` SDK.
+
+Configuration is loaded from `.env`:
+
+- `LLM_PROVIDER=gemini`;
+- `LLM_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai/`;
+- `LLM_MODEL=gemma-4-26b-a4b-it` (or another model explicitly supported by the endpoint);
+- `LLM_API_KEY` contains the Google AI Studio key and must never be logged or committed.
+
+The client uses Chat Completions, JSON structured output and local tool calls. Do not assume that every OpenAI-specific API, parameter or hosted tool is supported by Gemini's compatibility layer. Provider-specific behavior belongs in `src/app/llm/client.py`; the tutor orchestrator must depend on the internal `LLMClient` contract.
+
 Avoid speculative abstractions.
 
 Do not create generic frameworks before a second concrete use case requires them.

@@ -79,6 +79,12 @@ One primary LLM performs:
 
 The LLM does not directly access PostgreSQL.
 
+## 3.1 Current Gemini implementation
+
+The current implementation uses the Google AI Studio Gemini API through Google's OpenAI-compatible endpoint, using the Python `openai` SDK. The endpoint is configured with `LLM_BASE_URL` and the Google API key with `LLM_API_KEY`.
+
+The client uses Chat Completions rather than assuming the full OpenAI Responses API. It requests JSON output, validates it as `TutorResponse`, extracts function tool calls, and passes them to the deterministic Python Tool Registry. This compatibility layer is limited: OpenAI-specific parameters and hosted tools must not be assumed to work with Gemini. Provider-specific translation remains isolated in `src/app/llm/client.py`.
+
 All interaction with the database occurs through tools.
 
 ---
