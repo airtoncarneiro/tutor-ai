@@ -27,3 +27,5 @@ class ToolRegistry:
     def names(self) -> tuple[str, ...]:
         return tuple(self._tools)
 
+    def definitions(self) -> list[dict[str, Any]]:
+        return [{"type": "function", "function": {"name": name, "description": f"Executa a ferramenta {name}", "parameters": model.model_json_schema()}} for name, (model, _) in self._tools.items()]

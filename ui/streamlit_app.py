@@ -98,6 +98,13 @@ def main() -> None:
         except Exception as exc:
             st.error(f"Falha ao preparar o laboratório: {exc}")
     sql = st.text_area("Escreva uma consulta SQL", height=150, key="sql_editor")
+    concepts = []
+    if st.session_state.session_id:
+        concepts = LearningStateService(repository).load(st.session_state.session_id)["concepts"]
+    concept_key = st.selectbox("Conceito avaliado", [c["concept_key"] for c in concepts] or ["window_semantics"])
+    semantics = st.slider("Semântica correta", 0.0, 1.0, 0.0, 0.1)
+    requirement = st.slider("Atendimento ao requisito", 0.0, 1.0, 0.0, 0.1)
+    reasoning = st.slider("Qualidade do raciocínio", 0.0, 1.0, 0.0, 0.1)
     if st.button("Executar SQL"):
         if not st.session_state.session_id:
             st.warning("Inicie uma sessão antes de executar SQL.")
@@ -113,6 +120,13 @@ def main() -> None:
             else:
                 st.error(result.error)
             st.caption("A consulta e o resultado permanecem disponíveis nesta sessão para avaliação do tutor.")
+            if result.success and st.button("Avaliar esta tentativa"):
+                try:
+                    service = ApplicationSessionService(database, repository, OpenAIClient(settings.llm_model, settings.llm_api_key.get_secret_value(), settings.llm_base_url), load_prompt())
+                    evaluation = service.submit_sql(st.session_state.session_id, sql, concept_key, requirement, semantics, reasoning)
+                    st.success(f"Avaliação registrada. Próxima ação: {evaluation['next_action']}")
+                except Exception as exc:
+                    st.error(f"Falha ao avaliar: {exc}")
 
 
 if __name__ == "__main__":

@@ -58,10 +58,13 @@ class LabService:
 
     def execute(self, sql: str) -> SqlResult:
         _validate_lab_sql([sql])
+        if sql.count(";") > 1 or not re.match(r"^\s*(select|with)\b", sql, re.I) or re.search(r"\b(insert|update|delete|alter|drop|truncate|grant|revoke|create)\b", sql, re.I):
+            return SqlResult(success=False, error="Somente uma consulta SELECT/WITH é permitida no executor do aluno")
         try:
             with self.database.connection() as conn:
+                conn.execute("SET statement_timeout = '5000ms'")
                 conn.execute("SET search_path TO lab")
-                cursor = conn.execute(sql)
+                cursor = conn.execute(f"SELECT * FROM ({sql.rstrip(';')}) AS learner_query LIMIT 100")
                 if cursor.description is None:
                     return SqlResult(success=True)
                 columns = [column.name for column in cursor.description]

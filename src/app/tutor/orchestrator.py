@@ -14,7 +14,7 @@ class TutorOrchestrator:
 
     def respond(self, learner_message: str, learning_state: dict[str, Any]) -> TutorResponse:
         state = dict(learning_state)
-        tool_definitions = [{"type": "function", "function": {"name": name, "description": f"Executa a ferramenta {name}", "parameters": {"type": "object", "additionalProperties": True}}} for name in self.registry.names]
+        tool_definitions = self.registry.definitions()
         for _ in range(self.max_iterations):
             response = self.client.complete(system_prompt=self.system_prompt, learning_state=state, learner_message=learner_message, tools=tool_definitions)
             if not response.tool_calls:
@@ -24,4 +24,5 @@ class TutorOrchestrator:
                 result = self.registry.dispatch(call.name, call.arguments)
                 results.append({"tool": call.name, "result": result})
             state["last_tool_results"] = results
+            state["tool_results_history"] = state.get("tool_results_history", []) + results
         raise RuntimeError(f"LLM excedeu o máximo de {self.max_iterations} iterações")
