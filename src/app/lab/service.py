@@ -23,16 +23,16 @@ class LabService:
 
     def create_or_replace(self, definition: LabDefinition) -> LabSummary:
         _validate_lab_sql([*definition.ddl, *definition.seed_sql])
-        ddl = "\n".join(definition.ddl)
-        seed = "\n".join(definition.seed_sql)
+        ddl = ";\n".join(definition.ddl)
+        seed = ";\n".join(definition.seed_sql)
         with self.database.connection() as conn:
             conn.execute("DROP SCHEMA IF EXISTS lab CASCADE")
             conn.execute("CREATE SCHEMA lab")
             conn.execute("SET search_path TO lab")
-            if ddl:
-                conn.execute(ddl)
-            if seed:
-                conn.execute(seed)
+            for statement in definition.ddl:
+                conn.execute(statement)
+            for statement in definition.seed_sql:
+                conn.execute(statement)
             conn.execute("SET search_path TO public")
             conn.execute("""INSERT INTO tutor.lab_baseline (baseline_id, ddl, seed_sql)
                 VALUES (1, %s, %s) ON CONFLICT (baseline_id) DO UPDATE
@@ -44,7 +44,7 @@ class LabService:
             row = conn.execute("SELECT ddl, seed_sql FROM tutor.lab_baseline WHERE baseline_id=1").fetchone()
         if row is None:
             raise ValueError("Nenhum baseline do Learning Lab foi criado")
-        return self.create_or_replace(LabDefinition(ddl=[row[0]] if row[0] else [], seed_sql=[row[1]] if row[1] else []))
+        return self.create_or_replace(LabDefinition(ddl=[part.strip() for part in row[0].split(";") if part.strip()], seed_sql=[part.strip() for part in row[1].split(";") if part.strip()]))
 
     def extend(self, ddl: list[str] | None = None, dml: list[str] | None = None) -> LabSummary:
         statements = [*(ddl or []), *(dml or [])]
@@ -83,4 +83,3 @@ class LabService:
                 indexes = conn.execute("SELECT indexname FROM pg_indexes WHERE schemaname='lab' AND tablename=%s ORDER BY indexname", (name,)).fetchall()
                 result.append(LabTable(name=name, columns=[LabColumn(name=c[0], data_type=c[1], nullable=c[2]) for c in columns], primary_key=[p[0] for p in pks], indexes=[i[0] for i in indexes]))
         return LabSummary(tables=result)
-

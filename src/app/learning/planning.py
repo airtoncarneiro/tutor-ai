@@ -4,6 +4,8 @@ from typing import Any
 from uuid import UUID
 
 from app.persistence.repositories import LearningRepository
+from app.lab.generators import generate_window_functions_lab
+from app.lab.service import LabService
 
 
 class PlanningService:
@@ -35,3 +37,12 @@ class PlanningService:
         self.repository.add_event(session_id, "PATH_CREATED", path)
         return path
 
+    def provision_lab(self, session_id: UUID, lab_service: LabService) -> object:
+        session = self.repository.get_session(session_id)
+        if session is None:
+            raise ValueError(f"Sessão não encontrada: {session_id}")
+        if "window" not in session.topic.lower():
+            raise ValueError("Nenhum gerador de Learning Lab está definido para este tópico")
+        specification, summary = generate_window_functions_lab(lab_service)
+        self.repository.add_event(session_id, "LAB_CREATED", {"name": specification.name})
+        return summary
