@@ -1,4 +1,5 @@
 import json
+import re
 from typing import Any, Protocol
 
 from openai import OpenAI
@@ -30,7 +31,12 @@ class OpenAIClient:
             tool_calls = []
             for call in message.tool_calls or []:
                 tool_calls.append({"name": call.function.name, "arguments": json.loads(call.function.arguments)})
-            payload = json.loads(message.content) if message.content else {"phase": "PRACTICE", "tool_calls": tool_calls}
+            content = message.content or ""
+            # Gemma may include an explicit reasoning block before the answer.
+            content = re.sub(r"<thought>.*?</thought>", "", content, flags=re.S).strip()
+            if content.startswith("```"):
+                content = re.sub(r"^```(?:json)?\s*|\s*```$", "", content, flags=re.I).strip()
+            payload = json.loads(content) if content else {"phase": "PRACTICE", "tool_calls": tool_calls}
             payload["tool_calls"] = tool_calls or payload.get("tool_calls", [])
             return TutorResponse.model_validate(payload)
         except Exception as exc:
