@@ -4,8 +4,7 @@ import streamlit as st
 
 from app.config import Settings
 from app.lab.service import LabService
-from app.learning.diagnostic import DiagnosticService
-from app.learning.state_service import LearningStateService
+from app.application.session_service import ApplicationSessionService
 from app.llm.client import OpenAIClient
 from app.llm.prompt_loader import load_prompt
 from app.persistence.database import Database
@@ -41,7 +40,7 @@ def main() -> None:
         st.header("Aprendizagem")
         if st.session_state.session_id:
             try:
-                state = LearningStateService(repository).load(st.session_state.session_id)
+                state = ApplicationSessionService(database, repository, OpenAIClient(settings.llm_model, settings.llm_api_key.get_secret_value(), settings.llm_base_url), load_prompt()).state(st.session_state.session_id)
             except Exception as exc:
                 st.error(f"Falha ao carregar o estado: {exc}")
                 state = None
@@ -79,12 +78,9 @@ def main() -> None:
     if prompt := st.chat_input("O que você quer aprender?"):
         st.session_state.messages.append({"role": "user", "content": prompt})
         try:
-            if st.session_state.session_id is None:
-                session = DiagnosticService(repository).start(prompt)
-                st.session_state.session_id = session.session_id
-            state = LearningStateService(repository).load(st.session_state.session_id)
             client = OpenAIClient(settings.llm_model, settings.llm_api_key.get_secret_value(), settings.llm_base_url)
-            response = TutorOrchestrator(client, create_registry(database), load_prompt(), max_iterations=8).respond(prompt, state)
+            service = ApplicationSessionService(database, repository, client, load_prompt())
+            st.session_state.session_id, response = service.turn(prompt, st.session_state.session_id)
             answer = response.message or "O tutor solicitou uma ação de aprendizagem."
         except Exception as exc:
             answer = f"Não foi possível processar esta interação: {exc}"
@@ -93,6 +89,14 @@ def main() -> None:
 
     st.divider()
     st.subheader("Laboratório SQL")
+    if st.session_state.session_id and st.button("Preparar cenário e laboratório"):
+        try:
+            service = ApplicationSessionService(database, repository, OpenAIClient(settings.llm_model, settings.llm_api_key.get_secret_value(), settings.llm_base_url), load_prompt())
+            service.prepare_learning(st.session_state.session_id)
+            st.success("Cenário e laboratório preparados.")
+            st.rerun()
+        except Exception as exc:
+            st.error(f"Falha ao preparar o laboratório: {exc}")
     sql = st.text_area("Escreva uma consulta SQL", height=150, key="sql_editor")
     if st.button("Executar SQL"):
         if not st.session_state.session_id:
