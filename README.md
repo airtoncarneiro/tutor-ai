@@ -6,6 +6,7 @@ Tutor local e adaptativo de SQL, com um laboratório executável em PostgreSQL e
 
 - Python 3.11+
 - Docker e Docker Compose
+- Streamlit
 
 ## Configuração e execução
 
@@ -19,6 +20,14 @@ docker compose up -d
 .venv/bin/pytest
 .venv/bin/adaptive-sql-tutor
 ```
+
+Para iniciar a interface gráfica local (Fase 14):
+
+```bash
+.venv/bin/streamlit run ui/streamlit_app.py
+```
+
+Este comando ficará disponível após a implementação da Fase 14.
 
 O PostgreSQL é exposto em `localhost:5432` por padrão. A integração atual usa o endpoint OpenAI-compatible do Google Gemini através do SDK `openai`. O modelo e a chave são carregados exclusivamente do `.env`.
 

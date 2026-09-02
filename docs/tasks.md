@@ -873,3 +873,33 @@ The project is V1-complete when:
 - strong and weak prerequisite learners follow demonstrably different paths;
 - automated tests cover critical deterministic behavior;
 - end-to-end Window Functions scenario passes.
+
+# Phase 14 — Graphical Interface
+
+## TASK-140 — Streamlit application shell
+
+Create a local Streamlit entrypoint and document how to start it.
+
+Acceptance: the application starts locally, accepts a learning request and
+preserves the active session across reruns.
+
+## TASK-141 — Tutor conversation interface
+
+Connect the interface to the orchestration service and support multiple
+learner turns, including diagnostic questions.
+
+## TASK-142 — SQL practice interface
+
+Add a SQL editor and execution controls. Display rows, columns, row count and
+PostgreSQL errors, keeping submitted SQL and actual output available for
+evaluation.
+
+## TASK-143 — Learning progress panel
+
+Display scenario, short-horizon path, concepts, mastery, confidence and recent
+evidence, distinguishing remediation, practice and advancement.
+
+## TASK-144 — GUI end-to-end validation
+
+Validate the Window Functions flow and ensure strong/weak prerequisite path
+divergence remains observable in the interface.

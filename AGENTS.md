@@ -51,6 +51,7 @@ The application is:
 - Python-based;
 - backed by one local PostgreSQL instance;
 - powered by one primary LLM tutor with tools.
+- includes a local graphical interface implemented with Streamlit.
 
 Do not introduce multi-agent architecture in V1.
 
@@ -65,6 +66,11 @@ Do not introduce:
 - separate databases per learner;
 - vector databases unless a later requirement explicitly needs one;
 - message brokers unless a later requirement explicitly needs one.
+
+The V1 user interface is a local Streamlit application. It exposes the
+learning conversation, diagnostic questions, SQL execution, results/errors,
+learning path and concept mastery. Keep UI code thin; pedagogical reasoning
+remains with the LLM and deterministic behavior remains in application services.
 
 Prefer the simplest implementation satisfying the requirements.
 

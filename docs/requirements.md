@@ -15,6 +15,7 @@ V1 SHALL support:
 - dynamic Learning Lab creation;
 - LLM-driven adaptive tutoring;
 - persistent learning state.
+- a local graphical interface implemented with Streamlit.
 
 V1 SHALL NOT require:
 
@@ -23,6 +24,11 @@ V1 SHALL NOT require:
 - cloud infrastructure;
 - distributed processing;
 - multi-agent orchestration.
+- a separate frontend/backend deployment.
+
+The graphical interface SHALL allow the learner to enter a learning request,
+interact through multiple turns, answer diagnostic questions, write and
+execute SQL, see results/errors, and see scenario, path and mastery.
 
 ---
 

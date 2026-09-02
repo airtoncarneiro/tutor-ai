@@ -4,7 +4,7 @@
 
 V1 uses:
 
-`Python + LLM + Tools + PostgreSQL`
+`Streamlit + Python + LLM + Tools + PostgreSQL`
 
 High-level flow:
 
@@ -37,6 +37,16 @@ High-level flow:
 ```
 
 No multi-agent architecture is required for V1.
+
+## 1.1 Graphical interface
+
+The V1 graphical interface is a local Streamlit application. It presents the
+tutor conversation, diagnostic interactions, SQL editor, execution results and
+the current learning state. Streamlit calls application services and does not
+implement pedagogical rules or access PostgreSQL directly.
+
+The interface is local and single-user; authentication and a separately
+deployed frontend are out of scope.
 
 ---
 
@@ -677,6 +687,9 @@ app/
 
 prompts/
 └── adaptive_sql_tutor.md
+
+ui/
+└── streamlit_app.py
 
 migrations/
 
