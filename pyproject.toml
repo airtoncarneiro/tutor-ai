@@ -20,6 +20,7 @@ dev = [
 
 [project.scripts]
 adaptive-sql-tutor = "app.main:main"
+adaptive-sql-tutor-migrate = "app.migrate:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/app"]
