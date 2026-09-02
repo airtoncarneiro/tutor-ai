@@ -329,3 +329,6 @@ Phase 16 tracks V1 hardening: GUI SQL evaluation, concrete tool schemas,
 complete adaptive diagnosis, SQL execution safeguards and GUI end-to-end
 validation. Do not declare V1 complete until these checks and path divergence
 are demonstrated.
+
+Phase 17 is reserved for post-V1 evolution: richer diagnosis, native Gemini SDK
+assessment, browser tests, observability and additional SQL scenarios.

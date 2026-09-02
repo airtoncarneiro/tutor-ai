@@ -76,3 +76,7 @@ o orquestrador, as ferramentas, a avaliação e a persistência em um fluxo úni
 A Fase 16 — Endurecimento e Validação da V1 — permanece pendente. Ela cobre a
 avaliação SQL na GUI, schemas específicos de ferramentas, contexto completo de
 tool calls, segurança do executor, diagnóstico adaptativo e testes end-to-end.
+
+A Fase 17 foi reservada para evolução pós-V1: diagnóstico mais sofisticado,
+avaliação do SDK nativo Gemini, testes de navegador, observabilidade avançada e
+novos cenários SQL. Ela não é necessária para a V1 local.

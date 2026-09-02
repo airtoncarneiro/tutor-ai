@@ -838,3 +838,6 @@ Not V1 requirements, but preserve reasonable replaceability for:
 - benchmark/evaluation framework.
 
 Do not implement these until required.
+
+Phase 17 contains post-V1 evolution work: richer diagnosis, native Gemini SDK
+assessment, browser-level GUI tests, observability and additional lab generators.

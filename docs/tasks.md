@@ -967,3 +967,27 @@ diverge through the same application path.
 Validate the complete Window Functions journey through the GUI without manual
 service orchestration or database preparation. V1 must not be declared complete
 if the path divergence is not demonstrated through the integrated application.
+
+# Phase 17 — Tutor Evolution and Production Quality
+
+## TASK-170 — Rich adaptive diagnosis
+
+Improve diagnostic selection and prerequisite investigation using structured evidence.
+
+## TASK-171 — Native Gemini integration assessment
+
+Evaluate `google-genai` and migrate only if the compatibility endpoint is insufficient.
+
+## TASK-172 — Browser-level GUI tests
+
+Test Streamlit session continuity, SQL errors and adaptive progress through a browser.
+
+## TASK-173 — Production observability
+
+Add structured logs and correlation identifiers without exposing secrets.
+
+## TASK-174 — Extended learning scenarios
+
+Add generators and acceptance scenarios for JOIN, CTE, NULL, recursive queries and optimization.
+
+Phase 17 is not required for the local single-user V1.

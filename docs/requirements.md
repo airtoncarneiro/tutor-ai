@@ -595,3 +595,7 @@ V1 is successful when it proves that:
 4. execution produces learning evidence;
 5. evidence changes subsequent learning behavior;
 6. the environment itself can evolve as learning evolves.
+
+Future evolution MAY include richer Gemini capabilities, browser testing,
+stronger observability and additional SQL scenarios. These are outside the
+local single-user V1.
