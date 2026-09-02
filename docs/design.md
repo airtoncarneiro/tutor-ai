@@ -48,6 +48,12 @@ implement pedagogical rules or access PostgreSQL directly.
 The interface is local and single-user; authentication and a separately
 deployed frontend are out of scope.
 
+## 1.3 V1 hardening boundary
+
+Before declaring V1 complete, connect GUI SQL submission to evaluation and
+evidence, use concrete JSON Schemas for tools, preserve tool results across
+LLM iterations, and apply execution safeguards to learner SQL.
+
 ---
 
 # 2. Runtime Responsibilities

@@ -904,6 +904,39 @@ evidence, distinguishing remediation, practice and advancement.
 Validate the Window Functions flow and ensure strong/weak prerequisite path
 divergence remains observable in the interface.
 
+# Phase 16 — V1 Hardening and Final Validation
+
+## TASK-160 — GUI SQL evaluation integration
+
+Connect SQL submission in Streamlit to evaluation, evidence persistence,
+mastery update and the adapted next action.
+
+## TASK-161 — Concrete tool schemas and context
+
+Send each tool's specific JSON Schema to the LLM and preserve tool results in
+the next LLM iteration. Malformed calls must be observable.
+
+## TASK-162 — Complete adaptive diagnosis
+
+Use structured diagnostic evidence to determine when PROBE is sufficient and
+generate contextual scenario/path data from that evidence.
+
+## TASK-163 — SQL execution hardening
+
+Enforce appropriate statement, transaction, timeout and result-size controls
+for learner SQL while preserving actual results and errors for evaluation.
+
+## TASK-164 — GUI end-to-end tests
+
+Test GUI success/failure paths, persistence across turns and strong/weak
+prerequisite divergence.
+
+## TASK-165 — Final V1 audit
+
+Verify every `SHALL` requirement and document implemented, partial and pending
+behavior. V1 SHALL NOT be declared complete until the integrated GUI flow and
+path divergence pass without manual service orchestration.
+
 # Phase 15 — Integrated Pedagogical Application
 
 ## TASK-150 — Application/session service

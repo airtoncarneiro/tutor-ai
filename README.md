@@ -72,3 +72,7 @@ Limitações conhecidas: o fluxo ainda é uma base local de desenvolvimento; o o
 
 A Fase 15 — Integração Pedagógica Completa — está pendente e conectará a GUI,
 o orquestrador, as ferramentas, a avaliação e a persistência em um fluxo único.
+
+A Fase 16 — Endurecimento e Validação da V1 — permanece pendente. Ela cobre a
+avaliação SQL na GUI, schemas específicos de ferramentas, contexto completo de
+tool calls, segurança do executor, diagnóstico adaptativo e testes end-to-end.

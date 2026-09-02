@@ -324,3 +324,8 @@ The Streamlit GUI is implemented, but the integrated pedagogical application
 service remains pending in Phase 15. This service must become the single
 boundary used by the GUI to coordinate diagnosis, planning, tools, evaluation
 and persistence across learner turns.
+
+Phase 16 tracks V1 hardening: GUI SQL evaluation, concrete tool schemas,
+complete adaptive diagnosis, SQL execution safeguards and GUI end-to-end
+validation. Do not declare V1 complete until these checks and path divergence
+are demonstrated.

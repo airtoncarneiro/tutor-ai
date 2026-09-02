@@ -35,6 +35,12 @@ orchestrator, learning state, tools and evaluation into one continuous learner
 experience. Each learner turn SHALL update the persisted session and return the
 next tutor action without manual service orchestration.
 
+## 6.2 V1 robustness
+
+The application SHALL provide specific tool schemas, preserve tool results in
+the next tutor context, make failures observable, and enforce appropriate
+statement, transaction, timeout and result-size controls for learner SQL.
+
 ---
 
 # 3. Core Learning Lifecycle
