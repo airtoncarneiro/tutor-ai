@@ -30,6 +30,11 @@ The graphical interface SHALL allow the learner to enter a learning request,
 interact through multiple turns, answer diagnostic questions, write and
 execute SQL, see results/errors, and see scenario, path and mastery.
 
+The integrated application SHALL connect the graphical interface, tutor
+orchestrator, learning state, tools and evaluation into one continuous learner
+experience. Each learner turn SHALL update the persisted session and return the
+next tutor action without manual service orchestration.
+
 ---
 
 # 3. Core Learning Lifecycle

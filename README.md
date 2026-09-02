@@ -69,3 +69,6 @@ docker compose down -v
 Implementados: persistência do estado de aprendizagem, diagnóstico, cenário contextual, trilha de curto horizonte, laboratório PostgreSQL dinâmico, exercícios executáveis, avaliação/mastery, evolução do lab, Apply/Transfer e integração Gemini.
 
 Limitações conhecidas: o fluxo ainda é uma base local de desenvolvimento; o orquestrador LLM não possui ainda uma interface de aplicação completa para todos os turnos do aluno, e a cobertura end-to-end usa o cenário Window Functions como prova principal. Não há autenticação, multiusuário, infraestrutura cloud ou isolamento entre usuários.
+
+A Fase 15 — Integração Pedagógica Completa — está pendente e conectará a GUI,
+o orquestrador, as ferramentas, a avaliação e a persistência em um fluxo único.

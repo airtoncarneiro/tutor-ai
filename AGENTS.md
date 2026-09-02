@@ -317,3 +317,10 @@ V1 is complete only when an end-to-end flow demonstrates:
 13. mastery update;
 14. next-step adaptation;
 15. at least one demonstrated path divergence caused by learner evidence.
+
+## Phase 15 boundary
+
+The Streamlit GUI is implemented, but the integrated pedagogical application
+service remains pending in Phase 15. This service must become the single
+boundary used by the GUI to coordinate diagnosis, planning, tools, evaluation
+and persistence across learner turns.

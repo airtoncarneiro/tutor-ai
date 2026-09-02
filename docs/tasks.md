@@ -903,3 +903,34 @@ evidence, distinguishing remediation, practice and advancement.
 
 Validate the Window Functions flow and ensure strong/weak prerequisite path
 divergence remains observable in the interface.
+
+# Phase 15 — Integrated Pedagogical Application
+
+## TASK-150 — Application/session service
+
+Create one application boundary that loads state, invokes the tutor, dispatches
+tools, persists events and returns the learner-facing response. The GUI must
+not assemble domain services directly.
+
+## TASK-151 — Complete diagnostic transition
+
+Connect PROBE turns to evidence, baseline, scenario, path and automatic lab
+provisioning. The lab must not be created before sufficient diagnosis.
+
+## TASK-152 — Evaluated SQL interaction
+
+Connect learner SQL to evaluation, evidence persistence, mastery updates and
+the adapted next action. The evaluator must receive requirement, SQL and real
+result/error.
+
+## TASK-153 — Adaptive multi-turn continuation
+
+Ensure newly persisted evidence changes subsequent teaching, remediation,
+practice, review, Apply or Transfer actions. Strong and weak learners must
+diverge through the same application path.
+
+## TASK-154 — Full application acceptance
+
+Validate the complete Window Functions journey through the GUI without manual
+service orchestration or database preparation. V1 must not be declared complete
+if the path divergence is not demonstrated through the integrated application.
