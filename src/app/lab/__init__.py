@@ -1,0 +1,2 @@
+"""Disposable PostgreSQL learning laboratory."""
+
