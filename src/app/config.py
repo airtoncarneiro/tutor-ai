@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     llm_provider: str = "openai"
     llm_model: str
     llm_api_key: SecretStr
+    llm_base_url: str | None = None
     app_env: Literal["development", "test", "production"] = "development"
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
@@ -26,4 +27,3 @@ class Settings(BaseSettings):
             f"postgresql://{self.postgres_user}:{self.postgres_password.get_secret_value()}"
             f"@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
         )
-

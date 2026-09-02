@@ -11,19 +11,27 @@ class LLMClient(Protocol):
 
 
 class OpenAIClient:
-    def __init__(self, model: str, api_key: str) -> None:
+    def __init__(self, model: str, api_key: str, base_url: str | None = None) -> None:
         self.model = model
-        self.client = OpenAI(api_key=api_key)
+        self.client = OpenAI(api_key=api_key, base_url=base_url)
 
     def complete(self, *, system_prompt: str, learning_state: dict[str, Any], learner_message: str, tools: list[dict[str, Any]]) -> TutorResponse:
-        response = self.client.responses.create(
+        response = self.client.chat.completions.create(
             model=self.model,
-            instructions=system_prompt,
-            input=json.dumps({"learning_state": learning_state, "learner_message": learner_message}, ensure_ascii=False),
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": json.dumps({"learning_state": learning_state, "learner_message": learner_message}, ensure_ascii=False)},
+            ],
             tools=tools,
+            response_format={"type": "json_object"},
         )
         try:
-            return TutorResponse.model_validate_json(response.output_text)
+            message = response.choices[0].message
+            tool_calls = []
+            for call in message.tool_calls or []:
+                tool_calls.append({"name": call.function.name, "arguments": json.loads(call.function.arguments)})
+            payload = json.loads(message.content) if message.content else {"phase": "PRACTICE", "tool_calls": tool_calls}
+            payload["tool_calls"] = tool_calls or payload.get("tool_calls", [])
+            return TutorResponse.model_validate(payload)
         except Exception as exc:
             raise ValueError(f"Resposta estruturada inválida do LLM: {exc}") from exc
-
