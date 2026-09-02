@@ -34,6 +34,14 @@ class LearningRepository:
             raise ValueError(f"Sessão não encontrada: {session_id}")
         return LearningSession.model_validate(dict(zip(["session_id", "topic", "goal", "phase", "status", "scenario", "created_at", "updated_at"], row)))
 
+    def update_scenario(self, session_id: UUID, scenario: dict[str, Any], phase: str = "PLAN") -> LearningSession:
+        with self.database.connection() as conn:
+            row = conn.execute("""UPDATE tutor.learning_session SET scenario=%s, phase=%s, updated_at=now()
+                WHERE session_id=%s RETURNING *""", (Jsonb(scenario), phase, session_id)).fetchone()
+        if row is None:
+            raise ValueError(f"Sessão não encontrada: {session_id}")
+        return LearningSession.model_validate(dict(zip(["session_id", "topic", "goal", "phase", "status", "scenario", "created_at", "updated_at"], row)))
+
     def upsert_concept(self, session_id: UUID, concept_key: str, name: str, mastery: float = 0.0, confidence: str = "low", misconception: str | None = None) -> LearningConcept:
         with self.database.connection() as conn:
             row = conn.execute("""INSERT INTO tutor.learning_concept (session_id, concept_key, name, mastery, confidence, misconception)
