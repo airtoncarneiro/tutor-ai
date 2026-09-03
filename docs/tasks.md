@@ -980,6 +980,8 @@ Evaluate `google-genai` and migrate only if the compatibility endpoint is insuff
 
 ## TASK-175 — Resilient LLM client
 
+Implemented in the current baseline.
+
 Implement bounded provider-failure handling in `src/app/llm/client.py`.
 
 Scope:
@@ -1006,6 +1008,11 @@ Acceptance:
 - the real Gemini smoke test remains optional and is never required for the
   deterministic test suite.
 
+Implementation evidence: bounded retry/backoff, sanitized provider failure,
+configurable timeout and tests for transient failures are present. A real
+provider smoke test is diagnostic only and is not part of the deterministic
+acceptance suite.
+
 ## TASK-176 — Lab and tool failure recovery
 
 Implemented in the current baseline.
@@ -1023,6 +1030,14 @@ Validation evidence:
 - invalid extensions do not commit changes;
 - malformed tool arguments remain observable to the tutor;
 - repeated tool calls terminate without an unbounded loop.
+
+## Current V1 validation status
+
+The deterministic suite has 34 passing tests. The real OpenRouter smoke test
+authenticates and returns structured/tool responses. The full learner turn is
+protected against malformed lab/tool calls and repeated loops, but the
+integrated GUI acceptance and strong/weak path divergence still require a
+successful end-to-end demonstration.
 
 ## TASK-172 — Browser-level GUI tests
 

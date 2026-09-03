@@ -244,14 +244,16 @@ Prefer:
 
 ## Current LLM implementation
 
-The current V1 implementation uses Google AI Studio's Gemini API through its OpenAI-compatible endpoint and the Python `openai` SDK.
+The current local configuration uses OpenRouter through its OpenAI-compatible
+endpoint and the Python `openai` SDK. The same client boundary can point to
+Google AI Studio's compatible endpoint when explicitly configured.
 
 Configuration is loaded from `.env`:
 
-- `LLM_PROVIDER=gemini`;
-- `LLM_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai/`;
-- `LLM_MODEL=gemma-4-26b-a4b-it` (or another model explicitly supported by the endpoint);
-- `LLM_API_KEY` contains the Google AI Studio key and must never be logged or committed.
+- `LLM_PROVIDER=openrouter`;
+- `LLM_BASE_URL=https://openrouter.ai/api/v1/`;
+- `LLM_MODEL=@preset/preset-free` (or another model explicitly supported by the endpoint);
+- `LLM_API_KEY` contains the provider key and must never be logged or committed.
 - `LLM_TIMEOUT_SECONDS` controls the per-request timeout and is configured in
   `.env` (the local default is 45 seconds).
 

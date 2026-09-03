@@ -29,15 +29,18 @@ Para iniciar a interface gráfica local (Fase 14):
 
 Este comando ficará disponível após a implementação da Fase 14.
 
-O PostgreSQL é exposto em `localhost:5432` por padrão. A integração atual usa o endpoint OpenAI-compatible do Google Gemini através do SDK `openai`. O modelo e a chave são carregados exclusivamente do `.env`.
+O PostgreSQL é exposto em `localhost:5432` por padrão. A configuração local
+atual usa o endpoint OpenAI-compatible do OpenRouter através do SDK `openai`.
+O mesmo cliente pode apontar para o endpoint compatível do Google Gemini. O
+modelo, o endpoint e a chave são carregados exclusivamente do `.env`.
 
 Configuração esperada:
 
 ```env
-LLM_PROVIDER=gemini
-LLM_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai/
-LLM_MODEL=gemma-4-26b-a4b-it
-LLM_API_KEY=sua_chave_do_google_ai_studio
+LLM_PROVIDER=openrouter
+LLM_BASE_URL=https://openrouter.ai/api/v1/
+LLM_MODEL=@preset/preset-free
+LLM_API_KEY=sua_chave_do_openrouter
 LLM_TIMEOUT_SECONDS=45
 ```
 
@@ -72,16 +75,18 @@ docker compose down -v
 
 ## Estado atual da V1
 
-Implementados: persistência do estado de aprendizagem, diagnóstico, cenário contextual, trilha de curto horizonte, laboratório PostgreSQL dinâmico, exercícios executáveis, avaliação/mastery, evolução do lab, Apply/Transfer e integração Gemini.
+Implementados: persistência do estado de aprendizagem, diagnóstico, cenário contextual, trilha de curto horizonte, laboratório PostgreSQL dinâmico, exercícios executáveis, avaliação/mastery, evolução do lab, Apply/Transfer, integração OpenRouter/Gemini compatível, retry do LLM e recuperação de falhas de ferramentas.
 
 Limitações conhecidas: o fluxo ainda é uma base local de desenvolvimento; o orquestrador LLM não possui ainda uma interface de aplicação completa para todos os turnos do aluno, e a cobertura end-to-end usa o cenário Window Functions como prova principal. Não há autenticação, multiusuário, infraestrutura cloud ou isolamento entre usuários.
 
-A Fase 15 — Integração Pedagógica Completa — está pendente e conectará a GUI,
-o orquestrador, as ferramentas, a avaliação e a persistência em um fluxo único.
+A Fase 15 — Integração Pedagógica Completa — está parcialmente implementada;
+o serviço de sessão já é usado pela GUI, mas a aceitação completa ainda está
+pendente.
 
-A Fase 16 — Endurecimento e Validação da V1 — permanece pendente. Ela cobre a
-avaliação SQL na GUI, schemas específicos de ferramentas, contexto completo de
-tool calls, segurança do executor, diagnóstico adaptativo e testes end-to-end.
+A Fase 16 — Endurecimento e Validação da V1 — está parcialmente implementada.
+Retry, schemas, contexto de ferramentas, segurança do executor e recuperação
+de falhas estão cobertos; ainda faltam a validação end-to-end no navegador e
+a demonstração de divergência adaptativa integrada.
 
 A Fase 17 foi reservada para evolução pós-V1: diagnóstico mais sofisticado,
 avaliação do SDK nativo Gemini, testes de navegador, observabilidade avançada e
