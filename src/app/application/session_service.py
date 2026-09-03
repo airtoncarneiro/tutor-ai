@@ -4,6 +4,7 @@ from uuid import UUID
 from app.learning.diagnostic import DiagnosticService
 from app.learning.evaluation import EvaluationEvidence, EvaluationService
 from app.learning.planning import PlanningService
+from app.learning.probe import AdaptiveProbe, ProbeEvidence
 from app.lab.service import LabService
 from app.learning.state_service import LearningStateService
 from app.llm.client import LLMClient
@@ -54,6 +55,7 @@ class ApplicationSessionService:
                 correct=item.correct,
                 reasoning_quality=item.confidence,
                 answer=item.answer or message,
+                misconception=item.misconception,
             )
         if existing_session and response.phase == "PROBE" and not response.diagnostic_evidence:
             probe_count = sum(1 for item in self.repository.recent_evidence(session_id, limit=100) if item.evidence_type == "probe_answer")
@@ -78,7 +80,20 @@ class ApplicationSessionService:
             concepts = state.get("concepts", [])
             strengths = [item["concept_key"] for item in concepts if item["mastery"] >= 0.8]
             gaps = [item["concept_key"] for item in concepts if item["mastery"] < 0.5]
+            concept_keys = {item["concept_id"]: item["concept_key"] for item in concepts}
+            probe_evidence = [
+                ProbeEvidence(
+                    concept_key=concept_keys.get(item.get("concept_id"), "unknown"),
+                    answer="",
+                    correct=(item.get("correctness") or 0) >= 0.5,
+                    confidence=item.get("reasoning_quality") or 0.0,
+                )
+                for item in state.get("recent_evidence", [])
+                if item.get("evidence_type") == "probe_answer"
+            ]
             scenario = planner.create_scenario(session_id, level="beginner" if gaps else "intermediate", target_capabilities=["partition data", "rank rows"], strengths=strengths, gaps=gaps, strategy={"preferred_exercises": ["REMEDIATE", "BUILD"] if gaps else ["BUILD", "DEBUG"]}, lab_requirements=["ties", "temporal ordering"], dependencies=[{"prerequisite": "aggregation", "concept": "window_semantics"}])
+            scenario["diagnostic_summary"] = AdaptiveProbe().summary(probe_evidence)
+            self.repository.update_scenario(session_id, scenario)
         planner.build_path(session_id)
         planner.provision_lab(session_id, LabService(self.database))
         self.repository.update_phase(session_id, "TEACH")

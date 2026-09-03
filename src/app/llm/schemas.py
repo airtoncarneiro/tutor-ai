@@ -14,6 +14,7 @@ class DiagnosticEvidence(BaseModel):
     answer: str = ""
     correct: bool
     confidence: float = Field(ge=0, le=1)
+    misconception: str | None = None
 
 
 class TutorResponse(BaseModel):

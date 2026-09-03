@@ -20,14 +20,14 @@ class DiagnosticService:
         self.repository.add_event(session.session_id, "PROBE_STARTED", {"topic": session.topic})
         return self.repository.update_phase(session.session_id, "PROBE")
 
-    def record_probe(self, session_id: UUID, concept_key: str, concept_name: str, *, correct: bool, reasoning_quality: float | None = None, answer: Any = None) -> dict:
-        concept = self.repository.upsert_concept(session_id, concept_key, concept_name)
+    def record_probe(self, session_id: UUID, concept_key: str, concept_name: str, *, correct: bool, reasoning_quality: float | None = None, answer: Any = None, misconception: str | None = None) -> dict:
+        concept = self.repository.upsert_concept(session_id, concept_key, concept_name, misconception=misconception)
         evidence = self.repository.add_evidence(session_id, "probe_answer", concept.concept_id, difficulty="diagnostic", correctness=1.0 if correct else 0.0, reasoning_quality=reasoning_quality, raw_evidence={"answer": answer} if answer is not None else None)
         # One answer only yields partial/insufficient evidence; repeated evidence
         # and the mastery engine will refine this value in a later phase.
         mastery = 0.9 if correct and (reasoning_quality or 0.0) >= 0.8 else 0.6 if correct else 0.2
         confidence = "high" if mastery >= 0.8 else "medium" if correct else "low"
-        concept = self.repository.upsert_concept(session_id, concept_key, concept_name, mastery=mastery, confidence=confidence)
+        concept = self.repository.upsert_concept(session_id, concept_key, concept_name, mastery=mastery, confidence=confidence, misconception=misconception)
         self.repository.add_event(session_id, "PROBE_EVIDENCE_RECORDED", {"concept_key": concept_key, "correct": correct})
         return {"concept": concept.model_dump(mode="json"), "evidence": evidence.model_dump(mode="json")}
 

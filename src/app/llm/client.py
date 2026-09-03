@@ -6,6 +6,8 @@ from typing import Any, Protocol
 
 from openai import OpenAI
 
+from app.observability import log_event, timed_event
+
 from .schemas import TutorResponse
 
 
@@ -63,16 +65,19 @@ class OpenAIClient:
         response = None
         for attempt in range(self.max_attempts):
             try:
-                response = self.client.chat.completions.create(
-                    model=self.model,
-                    messages=messages,
-                    tools=tools,
-                    response_format={"type": "json_object"},
-                )
+                with timed_event("llm_request", provider="openai_compatible", model=self.model, attempt=attempt + 1):
+                    response = self.client.chat.completions.create(
+                        model=self.model,
+                        messages=messages,
+                        tools=tools,
+                        response_format={"type": "json_object"},
+                    )
+                log_event("llm_response", model=self.model, attempt=attempt + 1, tool_count=len(getattr(response.choices[0].message, "tool_calls", None) or []))
                 break
             except Exception as exc:
                 status = getattr(exc, "status_code", None)
                 retryable = status in {429, 500, 502, 503, 504} or exc.__class__.__name__ in {"APIConnectionError", "APITimeoutError"}
+                log_event("llm_failure", model=self.model, attempt=attempt + 1, status=status, retryable=retryable)
                 if not retryable:
                     raise
                 if attempt == self.max_attempts - 1:
