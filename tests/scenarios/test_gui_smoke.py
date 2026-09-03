@@ -8,3 +8,4 @@ def test_gui_renders_core_controls(monkeypatch):
     assert not app.exception
     assert app.title[0].value == "Adaptive SQL Tutor"
     assert any(item.label == "Executar SQL" for item in app.button)
+    assert any(item.label == "Escreva uma consulta SQL" for item in app.text_area)

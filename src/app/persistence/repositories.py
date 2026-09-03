@@ -68,6 +68,12 @@ class LearningRepository:
             row = conn.execute("INSERT INTO tutor.learning_event (session_id, event_type, payload) VALUES (%s, %s, %s) RETURNING *", (session_id, event_type, Jsonb(payload or {}))).fetchone()
         return LearningEvent.model_validate(dict(zip(["event_id", "session_id", "event_type", "payload", "created_at"], row)))
 
+    def events(self, session_id: UUID, limit: int = 100) -> list[LearningEvent]:
+        with self.database.connection() as conn:
+            rows = conn.execute("SELECT * FROM tutor.learning_event WHERE session_id = %s ORDER BY created_at ASC LIMIT %s", (session_id, limit)).fetchall()
+        names = ["event_id", "session_id", "event_type", "payload", "created_at"]
+        return [LearningEvent.model_validate(dict(zip(names, row))) for row in rows]
+
     def recent_evidence(self, session_id: UUID, limit: int = 10) -> list[LearningEvidence]:
         with self.database.connection() as conn:
             rows = conn.execute("SELECT * FROM tutor.learning_evidence WHERE session_id = %s ORDER BY created_at DESC LIMIT %s", (session_id, limit)).fetchall()

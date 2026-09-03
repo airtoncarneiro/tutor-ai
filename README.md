@@ -84,9 +84,10 @@ o serviço de sessão já é usado pela GUI, mas a aceitação completa ainda es
 pendente.
 
 A Fase 16 — Endurecimento e Validação da V1 — está parcialmente implementada.
-Retry, schemas, contexto de ferramentas, segurança do executor e recuperação
-de falhas estão cobertos; ainda faltam a validação end-to-end no navegador e
-a demonstração de divergência adaptativa integrada.
+Retry, schemas, contexto de ferramentas, segurança do executor, recuperação de
+falhas e a validação manual no Chrome estão cobertos. A suíte automatizada de
+navegador e a demonstração da divergência adaptativa diretamente na GUI ainda
+estão pendentes.
 
 A Fase 17 foi reservada para evolução pós-V1: diagnóstico mais sofisticado,
 avaliação do SDK nativo Gemini, testes de navegador, observabilidade avançada e

@@ -56,7 +56,7 @@ class ApplicationSessionService:
                 answer=item.answer or message,
             )
         if existing_session and response.phase == "PROBE" and not response.diagnostic_evidence:
-            probe_count = sum(1 for item in updated_state_evidence(self.repository, session_id) if item.evidence_type == "probe_answer")
+            probe_count = sum(1 for item in self.repository.recent_evidence(session_id, limit=100) if item.evidence_type == "probe_answer")
             fallback = _fallback_probe_evidence(message, probe_count)
             diagnostic.record_probe(session_id, **fallback)
         self.repository.add_event(session_id, "TUTOR_RESPONSE", {"phase": response.phase, "message": response.message or ""})
@@ -83,11 +83,6 @@ class ApplicationSessionService:
         planner.provision_lab(session_id, LabService(self.database))
         self.repository.update_phase(session_id, "TEACH")
         return self.state(session_id)
-
-
-def updated_state_evidence(repository: LearningRepository, session_id: UUID):
-    """Small seam for counting persisted diagnostic evidence."""
-    return repository.recent_evidence(session_id, limit=100)
 
     def submit_sql(self, session_id: UUID, sql: str, concept_key: str, requirement_satisfaction: float = 0.0, semantics: float = 0.0, reasoning: float = 0.0, independent: bool = True) -> dict[str, Any]:
         if not sql.strip():

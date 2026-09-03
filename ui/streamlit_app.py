@@ -1,6 +1,7 @@
 """Local graphical interface for the Adaptive SQL Tutor."""
 
 import streamlit as st
+from uuid import UUID
 
 from app.config import Settings
 from app.lab.service import LabService
@@ -31,7 +32,18 @@ def main() -> None:
     if "messages" not in st.session_state:
         st.session_state.messages = []
     if "session_id" not in st.session_state:
-        st.session_state.session_id = None
+        raw_session_id = st.query_params.get("session_id")
+        try:
+            restored_id = UUID(raw_session_id) if raw_session_id else None
+            st.session_state.session_id = restored_id if restored_id and repository.get_session(restored_id) else None
+        except ValueError:
+            st.session_state.session_id = None
+        if st.session_state.session_id:
+            for event in repository.events(st.session_state.session_id):
+                if event.event_type == "LEARNER_MESSAGE":
+                    st.session_state.messages.append({"role": "user", "content": event.payload.get("message", "")})
+                elif event.event_type == "TUTOR_RESPONSE":
+                    st.session_state.messages.append({"role": "assistant", "content": event.payload.get("message", "")})
     if "last_sql" not in st.session_state:
         st.session_state.last_sql = None
     if "last_sql_result" not in st.session_state:
@@ -68,6 +80,7 @@ def main() -> None:
                 if st.button("Nova sessão"):
                     st.session_state.session_id = None
                     st.session_state.messages = []
+                    st.query_params.pop("session_id", None)
                     st.rerun()
         else:
             st.info("Inicie uma sessão para ver seu progresso.")
@@ -82,6 +95,7 @@ def main() -> None:
             client = OpenAIClient(settings.llm_model, settings.llm_api_key.get_secret_value(), settings.llm_base_url, settings.llm_timeout_seconds)
             service = ApplicationSessionService(database, repository, client, load_prompt())
             st.session_state.session_id, response = service.turn(prompt, st.session_state.session_id)
+            st.query_params["session_id"] = str(st.session_state.session_id)
             answer = response.message or "O tutor solicitou uma ação de aprendizagem."
         except Exception as exc:
             answer = f"Não foi possível processar esta interação: {exc}"
@@ -115,19 +129,22 @@ def main() -> None:
             result = LabService(database).execute(sql)
             st.session_state.last_sql = sql
             st.session_state.last_sql_result = result.model_dump(mode="json")
-            if result.success:
-                st.dataframe([dict(zip(result.columns, row)) for row in result.rows], use_container_width=True)
-                st.caption(f"{result.row_count} linha(s)")
-            else:
-                st.error(result.error)
-            st.caption("A consulta e o resultado permanecem disponíveis nesta sessão para avaliação do tutor.")
-            if result.success and st.button("Avaliar esta tentativa"):
-                try:
-                    service = ApplicationSessionService(database, repository, OpenAIClient(settings.llm_model, settings.llm_api_key.get_secret_value(), settings.llm_base_url, settings.llm_timeout_seconds), load_prompt())
-                    evaluation = service.submit_sql(st.session_state.session_id, sql, concept_key, requirement, semantics, reasoning)
-                    st.success(f"Avaliação registrada. Próxima ação: {evaluation['next_action']}")
-                except Exception as exc:
-                    st.error(f"Falha ao avaliar: {exc}")
+
+    if st.session_state.last_sql_result:
+        stored_result = st.session_state.last_sql_result
+        if stored_result["success"]:
+            st.dataframe([dict(zip(stored_result["columns"], row)) for row in stored_result["rows"]], use_container_width=True)
+            st.caption(f"{stored_result['row_count']} linha(s)")
+        else:
+            st.error(stored_result["error"])
+        st.caption("A consulta e o resultado permanecem disponíveis nesta sessão para avaliação do tutor.")
+        if stored_result["success"] and st.session_state.session_id and st.button("Avaliar esta tentativa"):
+            try:
+                service = ApplicationSessionService(database, repository, OpenAIClient(settings.llm_model, settings.llm_api_key.get_secret_value(), settings.llm_base_url, settings.llm_timeout_seconds), load_prompt())
+                evaluation = service.submit_sql(st.session_state.session_id, st.session_state.last_sql, concept_key, requirement, semantics, reasoning)
+                st.success(f"Avaliação registrada. Próxima ação: {evaluation['next_action']}")
+            except Exception as exc:
+                st.error(f"Falha ao avaliar: {exc}")
 
 
 if __name__ == "__main__":
