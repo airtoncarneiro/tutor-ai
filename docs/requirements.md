@@ -543,6 +543,19 @@ The initial tool set SHALL support:
 - load learning state;
 - save learning evidence.
 
+Tool execution resilience:
+
+- `create_lab` SHALL validate all DDL and seed SQL in a rollback-only
+  PostgreSQL transaction before replacing `lab`;
+- `extend_lab` SHALL validate its DDL/DML in a rollback-only transaction before
+  applying the extension;
+- validation and execution failures SHALL be returned to the tutor as
+  structured results containing success status and a sanitized error;
+- malformed tool arguments SHALL be observable by the tutor and SHALL NOT
+  terminate the learner turn;
+- the orchestrator SHALL stop repeated identical tool calls and SHALL return a
+  controlled learner-facing response when its iteration limit is reached.
+
 ---
 
 # 26. Adaptive Acceptance Scenario

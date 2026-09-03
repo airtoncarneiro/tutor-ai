@@ -1006,6 +1006,24 @@ Acceptance:
 - the real Gemini smoke test remains optional and is never required for the
   deterministic test suite.
 
+## TASK-176 — Lab and tool failure recovery
+
+Implemented in the current baseline.
+
+The implementation validates `create_lab` and `extend_lab` in rollback-only
+PostgreSQL transactions, returns provisioning failures as structured tool
+results, forwards malformed tool arguments to the next LLM iteration, and
+stops repeated identical tool calls. The learner receives a controlled message
+when the iteration budget is exhausted.
+
+Validation evidence:
+
+- unit and scenario suite: 32 tests passing;
+- invalid DDL does not replace the existing `lab`;
+- invalid extensions do not commit changes;
+- malformed tool arguments remain observable to the tutor;
+- repeated tool calls terminate without an unbounded loop.
+
 ## TASK-172 — Browser-level GUI tests
 
 Test Streamlit session continuity, SQL errors and adaptive progress through a browser.

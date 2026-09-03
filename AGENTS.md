@@ -264,6 +264,14 @@ never retrying malformed requests or validation failures. The UI SHALL expose a
 clear retryable error when the provider remains unavailable. Retries must not
 log the API key or complete learner payloads.
 
+Lab tool failures are part of the tutor context. `create_lab` and `extend_lab`
+must validate generated SQL in a rollback-only PostgreSQL transaction before
+changing the real `lab` schema. Provisioning or extension errors must be
+returned as structured tool results so the LLM can repair them. Tool argument
+validation errors must also return to the LLM instead of terminating the
+learner turn. The orchestrator must stop repeated identical tool calls and
+return a learner-facing response after the configured iteration limit.
+
 Avoid speculative abstractions.
 
 Do not create generic frameworks before a second concrete use case requires them.

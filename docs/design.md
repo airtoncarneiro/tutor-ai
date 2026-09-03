@@ -160,11 +160,15 @@ Conceptual input:
 
 Behavior:
 
-1. recreate `lab`;
-2. execute approved DDL;
-3. populate seed data;
-4. validate successful creation;
-5. return current schema summary.
+1. reject access outside the allowed lab boundary;
+2. execute DDL and seed SQL in a rollback-only validation transaction;
+3. recreate `lab` only after validation succeeds;
+4. execute approved DDL and populate seed data;
+5. validate successful creation and return the current schema summary.
+
+Validation failures do not modify the existing `lab`. The tool adapter returns
+`success=false`, a retryability flag and a sanitized error so the tutor can
+repair the specification.
 
 ---
 
@@ -220,6 +224,10 @@ Input MAY contain:
 - description/reason.
 
 Return updated schema summary.
+
+Extensions use the same rollback-only validation pattern against the current
+`lab` before being applied. Duplicate keys, invalid SQL and other PostgreSQL
+errors are returned as structured tool results.
 
 ---
 
@@ -595,6 +603,12 @@ LLM
 ```
 
 The application should make failures visible to the LLM so it can repair lab provisioning when appropriate.
+
+Tool argument validation failures follow the same path. The orchestrator adds
+the failure to the next tutor context instead of terminating the learner turn.
+It tracks repeated identical tool calls and stops the loop after a small
+bounded count; reaching the global iteration limit produces a controlled
+learner-facing response.
 
 ---
 
