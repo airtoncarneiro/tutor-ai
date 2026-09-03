@@ -77,17 +77,19 @@ docker compose down -v
 
 Implementados: persistência do estado de aprendizagem, diagnóstico, cenário contextual, trilha de curto horizonte, laboratório PostgreSQL dinâmico, exercícios executáveis, avaliação/mastery, evolução do lab, Apply/Transfer, integração OpenRouter/Gemini compatível, retry do LLM e recuperação de falhas de ferramentas.
 
-Limitações conhecidas: o fluxo ainda é uma base local de desenvolvimento; o orquestrador LLM não possui ainda uma interface de aplicação completa para todos os turnos do aluno, e a cobertura end-to-end usa o cenário Window Functions como prova principal. Não há autenticação, multiusuário, infraestrutura cloud ou isolamento entre usuários.
+Limitações conhecidas: o fluxo ainda é uma base local de desenvolvimento e a
+cobertura end-to-end usa o cenário Window Functions como prova principal. Não
+há autenticação, multiusuário, infraestrutura cloud ou isolamento entre
+usuários.
 
-A Fase 15 — Integração Pedagógica Completa — está parcialmente implementada;
-o serviço de sessão já é usado pela GUI, mas a aceitação completa ainda está
-pendente.
+A Fase 15 — Integração Pedagógica Completa — foi concluída para o escopo V1;
+o serviço de sessão é o boundary único da GUI e a aceitação multi-turno está
+coberta por testes.
 
-A Fase 16 — Endurecimento e Validação da V1 — está parcialmente implementada.
-Retry, schemas, contexto de ferramentas, segurança do executor, recuperação de
-falhas, testes automatizados da GUI e validação manual no Chrome estão
-cobertos. A auditoria final da V1 ainda precisa consolidar todos os critérios
-de aceitação em uma execução única.
+A Fase 16 — Endurecimento e Validação da V1 — foi concluída para o escopo
+local. Retry, schemas, contexto de ferramentas, segurança do executor,
+recuperação de falhas, testes automatizados da GUI, avaliação SQL e divergência
+de caminhos estão cobertos.
 
 A Fase 17 foi reservada para evolução pós-V1: diagnóstico mais sofisticado,
 avaliação do SDK nativo Gemini, testes de navegador, observabilidade avançada e

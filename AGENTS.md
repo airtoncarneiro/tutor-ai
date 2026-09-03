@@ -337,17 +337,17 @@ V1 is complete only when an end-to-end flow demonstrates:
 14. next-step adaptation;
 15. at least one demonstrated path divergence caused by learner evidence.
 
-## Phase 15 boundary
+## Phase 15 and 16 boundary
 
-The Streamlit GUI is implemented, but the integrated pedagogical application
-service remains pending in Phase 15. This service must become the single
-boundary used by the GUI to coordinate diagnosis, planning, tools, evaluation
-and persistence across learner turns.
+The integrated pedagogical application service is implemented and is the
+single boundary used by the Streamlit GUI to coordinate diagnosis, planning,
+tools, evaluation and persistence across learner turns. Phase 16 hardening is
+also implemented for the local Window Functions V1 scope, including GUI SQL
+evaluation, concrete tool schemas, adaptive diagnosis, SQL safeguards, failure
+recovery and automated strong/weak path divergence validation.
 
-Phase 16 tracks V1 hardening: GUI SQL evaluation, concrete tool schemas,
-complete adaptive diagnosis, SQL execution safeguards and GUI end-to-end
-validation. Do not declare V1 complete until these checks and path divergence
-are demonstrated.
+Do not expand this result into multi-user, cloud or multi-agent behavior. The
+remaining post-V1 work is tracked in Phase 17.
 
 Phase 17 is reserved for post-V1 evolution: richer diagnosis, native Gemini SDK
 assessment, browser tests, observability and additional SQL scenarios.

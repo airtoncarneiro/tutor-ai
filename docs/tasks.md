@@ -908,30 +908,54 @@ divergence remains observable in the interface.
 
 ## TASK-160 — GUI SQL evaluation integration
 
+Implemented in the current baseline. Streamlit delegates execution and
+evaluation to `ApplicationSessionService`; successful and failed executions,
+evidence, mastery and next action are exposed in the GUI.
+
 Connect SQL submission in Streamlit to evaluation, evidence persistence,
 mastery update and the adapted next action.
 
 ## TASK-161 — Concrete tool schemas and context
+
+Implemented in the current baseline and covered by unit tests for schemas,
+malformed arguments and preserved tool results.
 
 Send each tool's specific JSON Schema to the LLM and preserve tool results in
 the next LLM iteration. Malformed calls must be observable.
 
 ## TASK-162 — Complete adaptive diagnosis
 
+Implemented for the V1 Window Functions scenario. Structured probe evidence is
+persisted, a baseline is created after sufficient evidence, and scenario/path
+generation uses the resulting strengths and gaps.
+
 Use structured diagnostic evidence to determine when PROBE is sufficient and
 generate contextual scenario/path data from that evidence.
 
 ## TASK-163 — SQL execution hardening
+
+Implemented for the local V1 lab. Learner SQL is executed against PostgreSQL
+with the lab executor controls and the actual result or error is retained for
+evaluation.
 
 Enforce appropriate statement, transaction, timeout and result-size controls
 for learner SQL while preserving actual results and errors for evaluation.
 
 ## TASK-164 — GUI end-to-end tests
 
+Implemented for the Window Functions journey, including successful execution,
+SQL errors, evaluation registration, session restoration and strong/weak path
+divergence through the application boundary.
+
 Test GUI success/failure paths, persistence across turns and strong/weak
 prerequisite divergence.
 
 ## TASK-165 — Final V1 audit
+
+Implemented for the current V1 scope. The deterministic acceptance suite now
+covers the complete application path and demonstrates that strong prerequisite
+evidence advances toward the target while weak evidence selects aggregation
+remediation. The remaining Phase 17 items are explicitly post-V1.
 
 Verify every `SHALL` requirement and document implemented, partial and pending
 behavior. V1 SHALL NOT be declared complete until the integrated GUI flow and
@@ -1025,7 +1049,7 @@ when the iteration budget is exhausted.
 
 Validation evidence:
 
-- unit and scenario suite: 38 tests passing;
+- unit and scenario suite: 40 tests passing;
 - invalid DDL does not replace the existing `lab`;
 - invalid extensions do not commit changes;
 - malformed tool arguments remain observable to the tutor;
@@ -1033,11 +1057,11 @@ Validation evidence:
 
 ## Current V1 validation status
 
-The deterministic suite has 38 passing tests. The real OpenRouter smoke test
+The deterministic suite has 40 passing tests. The real OpenRouter smoke test
 authenticates and returns structured/tool responses. The full learner turn is
 protected against malformed lab/tool calls and repeated loops, but the
-integrated GUI acceptance and browser-level validation still require a
-successful end-to-end demonstration.
+integrated GUI acceptance is covered by the deterministic Streamlit application
+tests and browser-level validation remains a complementary live smoke test.
 
 The first real OpenRouter Window Functions turn now returns a diagnostic
 question in the `PROBE` phase. Provider responses with `question` instead of
@@ -1049,7 +1073,8 @@ turns: strong prerequisite evidence produced `strengths` and no `gaps`, while
 weak evidence produced `gaps` and a remediation current concept. Manual Chrome
 validation also confirmed session restoration after reload, valid SQL results,
 SQL errors and evaluation registration. A deterministic automated GUI suite now
-covers these checks through Streamlit's application test surface.
+covers these checks through Streamlit's application test surface, including
+strong/weak path divergence.
 
 ## TASK-172 — Browser-level GUI tests
 
