@@ -1025,7 +1025,7 @@ when the iteration budget is exhausted.
 
 Validation evidence:
 
-- unit and scenario suite: 32 tests passing;
+- unit and scenario suite: 36 tests passing;
 - invalid DDL does not replace the existing `lab`;
 - invalid extensions do not commit changes;
 - malformed tool arguments remain observable to the tutor;
@@ -1033,11 +1033,16 @@ Validation evidence:
 
 ## Current V1 validation status
 
-The deterministic suite has 34 passing tests. The real OpenRouter smoke test
+The deterministic suite has 36 passing tests. The real OpenRouter smoke test
 authenticates and returns structured/tool responses. The full learner turn is
 protected against malformed lab/tool calls and repeated loops, but the
 integrated GUI acceptance and strong/weak path divergence still require a
 successful end-to-end demonstration.
+
+The first real OpenRouter Window Functions turn now returns a diagnostic
+question in the `PROBE` phase. Provider responses with `question` instead of
+`message`, empty learner responses and list-based content are normalized by
+the LLM client.
 
 ## TASK-172 — Browser-level GUI tests
 

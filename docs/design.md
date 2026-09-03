@@ -199,6 +199,13 @@ Output:
 
 Actual PostgreSQL results SHALL be returned.
 
+During `INTENT`, `PROBE` and `DIAGNOSE`, the orchestrator exposes no lab
+mutation or state-loading tools. Diagnostic evidence must come from the
+learner's response and the application boundary; the model must not invent
+evidence by repeatedly calling tools. If a compatible provider returns a
+structured response without a learner-facing message, the client converts it
+to a safe `PROBE` question rather than allowing teaching to begin.
+
 ---
 
 ## inspect_lab
