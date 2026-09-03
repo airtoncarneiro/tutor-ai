@@ -9,6 +9,7 @@ from app.llm.client import OpenAIClient
 from app.llm.prompt_loader import load_prompt
 from app.persistence.database import Database
 from app.persistence.repositories import LearningRepository
+from app.learning.state_service import LearningStateService
 from app.tools.factory import create_registry
 from app.tutor.orchestrator import TutorOrchestrator
 

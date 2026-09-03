@@ -15,10 +15,17 @@ class TutorOrchestrator:
 
     def respond(self, learner_message: str, learning_state: dict[str, Any]) -> TutorResponse:
         state = dict(learning_state)
-        tool_definitions = self.registry.definitions()
+        conversation: list[dict[str, Any]] = []
+        phase = state.get("phase")
+        blocked_until_diagnosis = {"create_lab", "extend_lab", "reset_lab", "execute_sql"}
+        all_definitions = self.registry.definitions()
+        tool_definitions = [
+            definition for definition in all_definitions
+            if not (phase in {"INTENT", "PROBE", "DIAGNOSE"} and definition["function"]["name"] in blocked_until_diagnosis)
+        ]
         repeated_calls: dict[str, int] = {}
         for _ in range(self.max_iterations):
-            response = self.client.complete(system_prompt=self.system_prompt, learning_state=state, learner_message=learner_message, tools=tool_definitions)
+            response = self.client.complete(system_prompt=self.system_prompt, learning_state=state, learner_message=learner_message, tools=tool_definitions, conversation=conversation)
             if not response.tool_calls:
                 return response
             results = []
@@ -35,6 +42,8 @@ class TutorOrchestrator:
                 except (KeyError, ValueError) as exc:
                     result = {"success": False, "retryable": False, "error": str(exc)}
                 results.append({"tool": call.name, "result": result})
+            conversation.append({"role": "assistant", "content": json.dumps({"phase": response.phase, "tool_calls": [call.model_dump(mode="json") for call in response.tool_calls]}, ensure_ascii=False)})
+            conversation.append({"role": "user", "content": json.dumps({"tool_results": results}, ensure_ascii=False)})
             state["last_tool_results"] = results
             state["tool_results_history"] = state.get("tool_results_history", []) + results
         return TutorResponse(

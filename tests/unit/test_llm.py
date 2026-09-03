@@ -66,6 +66,26 @@ def test_orchestrator_stops_repeated_tool_loop():
     assert "Não consegui concluir" in result.message
 
 
+class ToolVisibilityLLM:
+    def __init__(self):
+        self.tools = None
+
+    def complete(self, **kwargs):
+        self.tools = [item["function"]["name"] for item in kwargs["tools"]]
+        return TutorResponse(phase="PROBE", message="Pergunta diagnóstica")
+
+
+def test_orchestrator_hides_lab_mutations_during_probe():
+    registry = ToolRegistry()
+    registry.register("create_lab", InspectLabInput, lambda: {})
+    registry.register("load_learning_state", InspectLabInput, lambda: {})
+    client = ToolVisibilityLLM()
+
+    TutorOrchestrator(client, registry, "prompt").respond("Quero aprender Window Functions", {"phase": "PROBE"})
+
+    assert client.tools == ["load_learning_state"]
+
+
 class FakeOpenAI:
     def __init__(self, response):
         self.chat = SimpleNamespace(completions=SimpleNamespace(create=lambda **_: response))
@@ -96,3 +116,36 @@ def test_openai_client_normalizes_structured_tool_arguments(monkeypatch):
 
     assert result.tool_calls[0].name == "inspect_lab"
     assert result.tool_calls[0].arguments == {}
+
+
+class TransientError(Exception):
+    status_code = 503
+
+
+class RetryingOpenAI:
+    def __init__(self, response):
+        self.calls = 0
+        self.response = response
+        self.chat = SimpleNamespace(completions=SimpleNamespace(create=self.create))
+
+    def create(self, **_):
+        self.calls += 1
+        if self.calls < 3:
+            raise TransientError("temporary outage")
+        return self.response
+
+
+def test_openai_client_retries_transient_provider_failure(monkeypatch):
+    response = SimpleNamespace(
+        choices=[SimpleNamespace(message=SimpleNamespace(content='{"phase":"PROBE","message":"ok"}', tool_calls=None))]
+    )
+    fake = RetryingOpenAI(response)
+    monkeypatch.setattr(llm_client, "OpenAI", lambda **_: fake)
+    sleeps = []
+    monkeypatch.setattr(llm_client.time, "sleep", sleeps.append)
+
+    result = llm_client.OpenAIClient("model", "key", max_attempts=3, backoff_seconds=0.25).complete(system_prompt="", learning_state={}, learner_message="", tools=[])
+
+    assert result.message == "ok"
+    assert fake.calls == 3
+    assert sleeps == [0.25, 0.5]

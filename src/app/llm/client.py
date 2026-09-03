@@ -1,5 +1,6 @@
 import json
 import re
+import time
 from collections.abc import Mapping
 from typing import Any, Protocol
 
@@ -38,25 +39,47 @@ def _tool_arguments(arguments: Any) -> dict[str, Any]:
 
 
 class LLMClient(Protocol):
-    def complete(self, *, system_prompt: str, learning_state: dict[str, Any], learner_message: str, tools: list[dict[str, Any]]) -> TutorResponse: ...
+    def complete(self, *, system_prompt: str, learning_state: dict[str, Any], learner_message: str, tools: list[dict[str, Any]], conversation: list[dict[str, Any]] | None = None) -> TutorResponse: ...
+
+
+class LLMProviderUnavailableError(RuntimeError):
+    """Sanitized error raised after exhausting transient provider retries."""
 
 
 class OpenAIClient:
-    def __init__(self, model: str, api_key: str, base_url: str | None = None, timeout: float = 45.0) -> None:
+    def __init__(self, model: str, api_key: str, base_url: str | None = None, timeout: float = 45.0, max_attempts: int = 3, backoff_seconds: float = 1.0) -> None:
+        if max_attempts < 1:
+            raise ValueError("max_attempts deve ser positivo")
         self.model = model
+        self.max_attempts = max_attempts
+        self.backoff_seconds = backoff_seconds
         self.client = OpenAI(api_key=api_key, base_url=base_url, timeout=timeout, max_retries=0)
 
-    def complete(self, *, system_prompt: str, learning_state: dict[str, Any], learner_message: str, tools: list[dict[str, Any]]) -> TutorResponse:
-        response = self.client.chat.completions.create(
-            model=self.model,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": json.dumps({"learning_state": learning_state, "learner_message": learner_message}, ensure_ascii=False)},
-            ],
-            tools=tools,
-            response_format={"type": "json_object"},
-        )
+    def complete(self, *, system_prompt: str, learning_state: dict[str, Any], learner_message: str, tools: list[dict[str, Any]], conversation: list[dict[str, Any]] | None = None) -> TutorResponse:
+        messages = [{"role": "system", "content": system_prompt}]
+        for item in conversation or []:
+            messages.append({"role": item["role"], "content": item["content"]})
+        messages.append({"role": "user", "content": json.dumps({"learning_state": learning_state, "learner_message": learner_message}, ensure_ascii=False)})
+        response = None
+        for attempt in range(self.max_attempts):
+            try:
+                response = self.client.chat.completions.create(
+                    model=self.model,
+                    messages=messages,
+                    tools=tools,
+                    response_format={"type": "json_object"},
+                )
+                break
+            except Exception as exc:
+                status = getattr(exc, "status_code", None)
+                retryable = status in {429, 500, 502, 503, 504} or exc.__class__.__name__ in {"APIConnectionError", "APITimeoutError"}
+                if not retryable:
+                    raise
+                if attempt == self.max_attempts - 1:
+                    raise LLMProviderUnavailableError("O provedor LLM está temporariamente indisponível após as tentativas configuradas.") from exc
+                time.sleep(self.backoff_seconds * (2 ** attempt))
         try:
+            assert response is not None
             message = response.choices[0].message
             tool_calls = []
             for call in message.tool_calls or []:
