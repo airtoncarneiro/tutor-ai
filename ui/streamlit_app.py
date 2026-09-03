@@ -40,7 +40,7 @@ def main() -> None:
         st.header("Aprendizagem")
         if st.session_state.session_id:
             try:
-                state = ApplicationSessionService(database, repository, OpenAIClient(settings.llm_model, settings.llm_api_key.get_secret_value(), settings.llm_base_url), load_prompt()).state(st.session_state.session_id)
+                state = ApplicationSessionService(database, repository, OpenAIClient(settings.llm_model, settings.llm_api_key.get_secret_value(), settings.llm_base_url, settings.llm_timeout_seconds), load_prompt()).state(st.session_state.session_id)
             except Exception as exc:
                 st.error(f"Falha ao carregar o estado: {exc}")
                 state = None
@@ -78,7 +78,7 @@ def main() -> None:
     if prompt := st.chat_input("O que você quer aprender?"):
         st.session_state.messages.append({"role": "user", "content": prompt})
         try:
-            client = OpenAIClient(settings.llm_model, settings.llm_api_key.get_secret_value(), settings.llm_base_url)
+            client = OpenAIClient(settings.llm_model, settings.llm_api_key.get_secret_value(), settings.llm_base_url, settings.llm_timeout_seconds)
             service = ApplicationSessionService(database, repository, client, load_prompt())
             st.session_state.session_id, response = service.turn(prompt, st.session_state.session_id)
             answer = response.message or "O tutor solicitou uma ação de aprendizagem."
@@ -91,7 +91,7 @@ def main() -> None:
     st.subheader("Laboratório SQL")
     if st.session_state.session_id and st.button("Preparar cenário e laboratório"):
         try:
-            service = ApplicationSessionService(database, repository, OpenAIClient(settings.llm_model, settings.llm_api_key.get_secret_value(), settings.llm_base_url), load_prompt())
+            service = ApplicationSessionService(database, repository, OpenAIClient(settings.llm_model, settings.llm_api_key.get_secret_value(), settings.llm_base_url, settings.llm_timeout_seconds), load_prompt())
             service.prepare_learning(st.session_state.session_id)
             st.success("Cenário e laboratório preparados.")
             st.rerun()
@@ -122,7 +122,7 @@ def main() -> None:
             st.caption("A consulta e o resultado permanecem disponíveis nesta sessão para avaliação do tutor.")
             if result.success and st.button("Avaliar esta tentativa"):
                 try:
-                    service = ApplicationSessionService(database, repository, OpenAIClient(settings.llm_model, settings.llm_api_key.get_secret_value(), settings.llm_base_url), load_prompt())
+                    service = ApplicationSessionService(database, repository, OpenAIClient(settings.llm_model, settings.llm_api_key.get_secret_value(), settings.llm_base_url, settings.llm_timeout_seconds), load_prompt())
                     evaluation = service.submit_sql(st.session_state.session_id, sql, concept_key, requirement, semantics, reasoning)
                     st.success(f"Avaliação registrada. Próxima ação: {evaluation['next_action']}")
                 except Exception as exc:

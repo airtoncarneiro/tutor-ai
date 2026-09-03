@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     llm_model: str
     llm_api_key: SecretStr
     llm_base_url: str | None = None
+    llm_timeout_seconds: float = 20.0
     app_env: Literal["development", "test", "production"] = "development"
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
