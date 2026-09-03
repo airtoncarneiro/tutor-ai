@@ -349,5 +349,6 @@ recovery and automated strong/weak path divergence validation.
 Do not expand this result into multi-user, cloud or multi-agent behavior. The
 remaining post-V1 work is tracked in Phase 17.
 
-Phase 17 is reserved for post-V1 evolution: richer diagnosis, native Gemini SDK
-assessment, browser tests, observability and additional SQL scenarios.
+Phase 17 is reserved for post-V1 evolution: richer diagnosis, browser tests,
+observability and additional SQL scenarios. Gemini must continue to use the
+OpenAI-compatible client boundary; do not add a native SDK adapter.

@@ -92,5 +92,11 @@ recuperação de falhas, testes automatizados da GUI, avaliação SQL e divergê
 de caminhos estão cobertos.
 
 A Fase 17 foi reservada para evolução pós-V1: diagnóstico mais sofisticado,
-avaliação do SDK nativo Gemini, testes de navegador, observabilidade avançada e
-novos cenários SQL. Ela não é necessária para a V1 local.
+testes de navegador, observabilidade avançada e novos cenários SQL. O projeto
+não manterá um SDK nativo Gemini; Gemini será acessado pela interface
+compatível com OpenAI. A Fase 17 não é necessária para a V1 local.
+
+As TASKs 170, 173 e 174 possuem implementação inicial: diagnóstico com
+priorização de follow-up, observabilidade com redaction e seleção de laboratórios
+para cenários SQL adicionais. A TASK-171 foi encerrada como não aplicável, pois
+o projeto não manterá o SDK nativo Gemini.

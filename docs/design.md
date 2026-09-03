@@ -119,6 +119,10 @@ turn must account for both the retry budget and the number of sequential tool
 iterations. Observability should record attempt count, duration and status
 without recording API keys or complete learner content.
 
+The project deliberately does not maintain a native Gemini SDK adapter. Gemini
+usage, when selected, must go through the OpenAI-compatible client boundary;
+provider-specific behavior remains isolated in `src/app/llm/client.py`.
+
 All interaction with the database occurs through tools.
 
 ---
@@ -878,5 +882,7 @@ Not V1 requirements, but preserve reasonable replaceability for:
 
 Do not implement these until required.
 
-Phase 17 contains post-V1 evolution work: richer diagnosis, native Gemini SDK
-assessment, browser-level GUI tests, observability and additional lab generators.
+Phase 17 contains post-V1 evolution work: richer diagnosis, browser-level GUI
+tests, observability and additional lab generators. Native Gemini SDK
+maintenance is out of scope; Gemini remains behind the OpenAI-compatible client
+boundary.

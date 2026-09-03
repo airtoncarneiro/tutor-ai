@@ -998,9 +998,15 @@ if the path divergence is not demonstrated through the integrated application.
 
 Improve diagnostic selection and prerequisite investigation using structured evidence.
 
+Implemented for the current tutor boundary. `AdaptiveProbe` now summarizes
+evidence by concept, prioritizes low-confidence or incorrect concepts for
+follow-up and persists the diagnostic summary in the contextual scenario.
+
 ## TASK-171 — Native Gemini integration assessment
 
-Evaluate `google-genai` and migrate only if the compatibility endpoint is insufficient.
+Encerrada como não aplicável. O projeto não manterá um adaptador baseado no
+SDK nativo `google-genai`; Gemini será consumido somente por uma interface
+compatível com OpenAI. Não há dependência nem código nativo para manter.
 
 ## TASK-175 — Resilient LLM client
 
@@ -1049,7 +1055,7 @@ when the iteration budget is exhausted.
 
 Validation evidence:
 
-- unit and scenario suite: 40 tests passing;
+- unit and scenario suite: 44 tests passing;
 - invalid DDL does not replace the existing `lab`;
 - invalid extensions do not commit changes;
 - malformed tool arguments remain observable to the tutor;
@@ -1057,7 +1063,7 @@ Validation evidence:
 
 ## Current V1 validation status
 
-The deterministic suite has 40 passing tests. The real OpenRouter smoke test
+The deterministic suite has 43 passing tests. The real OpenRouter smoke test
 authenticates and returns structured/tool responses. The full learner turn is
 protected against malformed lab/tool calls and repeated loops, but the
 integrated GUI acceptance is covered by the deterministic Streamlit application
@@ -1091,8 +1097,17 @@ complementary smoke test because it depends on the local browser connection.
 
 Add structured logs and correlation identifiers without exposing secrets.
 
+Implemented for local operation. Telemetry now includes correlation IDs,
+sanitized structured fields, request duration, attempt number, provider status
+and tool count. API keys, tokens, authorization values and complete learner
+payloads are not logged.
+
 ## TASK-174 — Extended learning scenarios
 
 Add generators and acceptance scenarios for JOIN, CTE, NULL, recursive queries and optimization.
+
+Implemented with pedagogical lab definitions and topic-based selection for
+JOIN, CTE, NULL, recursive CTE and optimization/performance. The existing
+Window Functions generator remains the default for its topic.
 
 Phase 17 is not required for the local single-user V1.
