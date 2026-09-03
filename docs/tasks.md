@@ -1046,7 +1046,10 @@ the LLM client.
 
 The real application flow also demonstrated strong/weak divergence after four
 turns: strong prerequisite evidence produced `strengths` and no `gaps`, while
-weak evidence produced `gaps` and a remediation current concept.
+weak evidence produced `gaps` and a remediation current concept. Manual Chrome
+validation also confirmed session restoration after reload, valid SQL results,
+SQL errors and evaluation registration. A repeatable automated browser suite
+for these checks remains pending under TASK-172.
 
 ## TASK-172 — Browser-level GUI tests
 
