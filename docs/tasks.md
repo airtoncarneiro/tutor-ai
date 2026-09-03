@@ -1048,12 +1048,19 @@ The real application flow also demonstrated strong/weak divergence after four
 turns: strong prerequisite evidence produced `strengths` and no `gaps`, while
 weak evidence produced `gaps` and a remediation current concept. Manual Chrome
 validation also confirmed session restoration after reload, valid SQL results,
-SQL errors and evaluation registration. A repeatable automated browser suite
-for these checks remains pending under TASK-172.
+SQL errors and evaluation registration. A deterministic automated GUI suite now
+covers these checks through Streamlit's application test surface.
 
 ## TASK-172 — Browser-level GUI tests
 
+Implemented in the current baseline through deterministic Streamlit GUI tests.
+
 Test Streamlit session continuity, SQL errors and adaptive progress through a browser.
+
+Coverage includes session creation and multi-turn progression, SQL validation,
+successful result rendering, PostgreSQL error rendering, evaluation feedback
+and restoration of persisted session state. Live Chrome validation remains a
+complementary smoke test because it depends on the local browser connection.
 
 ## TASK-173 — Production observability
 

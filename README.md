@@ -85,9 +85,9 @@ pendente.
 
 A Fase 16 — Endurecimento e Validação da V1 — está parcialmente implementada.
 Retry, schemas, contexto de ferramentas, segurança do executor, recuperação de
-falhas e a validação manual no Chrome estão cobertos. A suíte automatizada de
-navegador e a demonstração da divergência adaptativa diretamente na GUI ainda
-estão pendentes.
+falhas, testes automatizados da GUI e validação manual no Chrome estão
+cobertos. A auditoria final da V1 ainda precisa consolidar todos os critérios
+de aceitação em uma execução única.
 
 A Fase 17 foi reservada para evolução pós-V1: diagnóstico mais sofisticado,
 avaliação do SDK nativo Gemini, testes de navegador, observabilidade avançada e
