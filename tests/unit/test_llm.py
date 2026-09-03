@@ -29,6 +29,43 @@ def test_orchestrator_runs_sequential_tool_calls():
     assert client.calls == 3
 
 
+class InvalidThenValidLLM:
+    def __init__(self):
+        self.calls = 0
+
+    def complete(self, **kwargs):
+        self.calls += 1
+        if self.calls == 1:
+            return TutorResponse(phase="PROBE", tool_calls=[ToolCall(name="execute_sql", arguments={"sql": "SELECT 1"})])
+        return TutorResponse(phase="PROBE", message="Pergunta corrigida")
+
+
+def test_orchestrator_returns_tool_validation_error_to_llm():
+    registry = ToolRegistry()
+    registry.register("inspect_lab", InspectLabInput, lambda: {"tables": []})
+    client = InvalidThenValidLLM()
+
+    result = TutorOrchestrator(client, registry, "prompt", max_iterations=2).respond("Quero aprender JOIN", {})
+
+    assert result.message == "Pergunta corrigida"
+    assert client.calls == 2
+
+
+class RepeatingLLM:
+    def complete(self, **kwargs):
+        return TutorResponse(phase="PROBE", tool_calls=[ToolCall(name="inspect_lab")])
+
+
+def test_orchestrator_stops_repeated_tool_loop():
+    registry = ToolRegistry()
+    registry.register("inspect_lab", InspectLabInput, lambda: {"tables": []})
+
+    result = TutorOrchestrator(RepeatingLLM(), registry, "prompt", max_iterations=8).respond("Quero aprender JOIN", {})
+
+    assert result.phase == "PROBE"
+    assert "Não consegui concluir" in result.message
+
+
 class FakeOpenAI:
     def __init__(self, response):
         self.chat = SimpleNamespace(completions=SimpleNamespace(create=lambda **_: response))

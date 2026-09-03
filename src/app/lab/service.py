@@ -17,12 +17,44 @@ def _validate_lab_sql(statements: Iterable[str]) -> None:
             raise ValueError("SQL do Learning Lab não pode acessar a schema tutor nem criar/remover schemas")
 
 
+def _validate_definition_on_postgres(database: Database, definition: LabDefinition) -> None:
+    """Compile DDL/DML in an isolated transaction before replacing the lab."""
+    with database.connection() as conn:
+        try:
+            conn.execute("CREATE SCHEMA lab_validation")
+            conn.execute("SET search_path TO lab_validation")
+            for statement in definition.ddl:
+                conn.execute(statement)
+            for statement in definition.seed_sql:
+                conn.execute(statement)
+            conn.rollback()
+        except Exception as exc:
+            conn.rollback()
+            raise ValueError(f"Learning Lab inválido; a validação PostgreSQL falhou: {exc}") from exc
+
+
+def _validate_extension_on_postgres(database: Database, statements: Iterable[str]) -> None:
+    """Execute an extension in a rollback-only transaction before applying it."""
+    with database.connection() as conn:
+        try:
+            conn.execute("SET search_path TO lab")
+            for statement in statements:
+                conn.execute(statement)
+            conn.rollback()
+        except Exception as exc:
+            conn.rollback()
+            raise ValueError(f"Extensão do Learning Lab inválida; a validação PostgreSQL falhou: {exc}") from exc
+
+
 class LabService:
     def __init__(self, database: Database) -> None:
         self.database = database
 
     def create_or_replace(self, definition: LabDefinition) -> LabSummary:
         _validate_lab_sql([*definition.ddl, *definition.seed_sql])
+        if not definition.ddl:
+            raise ValueError("Learning Lab inválido: pelo menos uma instrução DDL é obrigatória")
+        _validate_definition_on_postgres(self.database, definition)
         ddl = ";\n".join(definition.ddl)
         seed = ";\n".join(definition.seed_sql)
         with self.database.connection() as conn:
@@ -49,6 +81,9 @@ class LabService:
     def extend(self, ddl: list[str] | None = None, dml: list[str] | None = None) -> LabSummary:
         statements = [*(ddl or []), *(dml or [])]
         _validate_lab_sql(statements)
+        if not statements:
+            raise ValueError("Extensão do Learning Lab inválida: nenhuma instrução foi informada")
+        _validate_extension_on_postgres(self.database, statements)
         with self.database.connection() as conn:
             conn.execute("SET search_path TO lab")
             for statement in statements:
