@@ -90,7 +90,18 @@ class OpenAIClient:
             if content.startswith("```"):
                 content = re.sub(r"^```(?:json)?\s*|\s*```$", "", content, flags=re.I).strip()
             payload = json.loads(content) if content else {"phase": "PRACTICE", "tool_calls": tool_calls}
+            if not isinstance(payload, dict):
+                raise ValueError("a resposta estruturada deve ser um objeto JSON")
+            # Some OpenAI-compatible models use `question` for a learner-facing
+            # diagnostic prompt and omit the phase; map that safe equivalent to
+            # the internal TutorResponse contract.
+            payload.setdefault("phase", "PROBE" if payload.get("question") else "PRACTICE")
+            if not payload.get("message") and isinstance(payload.get("question"), str):
+                payload["message"] = payload["question"]
             payload["tool_calls"] = tool_calls or payload.get("tool_calls", [])
+            if not payload.get("message") and not payload["tool_calls"]:
+                payload["phase"] = "PROBE"
+                payload["message"] = "Antes de começarmos: qual é sua experiência atual com SQL e com GROUP BY?"
             return TutorResponse.model_validate(payload)
         except Exception as exc:
             raise ValueError(f"Resposta estruturada inválida do LLM: {exc}") from exc

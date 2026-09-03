@@ -17,12 +17,17 @@ class TutorOrchestrator:
         state = dict(learning_state)
         conversation: list[dict[str, Any]] = []
         phase = state.get("phase")
-        blocked_until_diagnosis = {"create_lab", "extend_lab", "reset_lab", "execute_sql"}
+        blocked_until_diagnosis = {"create_lab", "extend_lab", "reset_lab", "execute_sql", "load_learning_state"}
         all_definitions = self.registry.definitions()
         tool_definitions = [
             definition for definition in all_definitions
             if not (phase in {"INTENT", "PROBE", "DIAGNOSE"} and definition["function"]["name"] in blocked_until_diagnosis)
         ]
+        if phase in {"INTENT", "PROBE", "DIAGNOSE"}:
+            # Diagnostic evidence comes from the learner's answer and is
+            # persisted by the application boundary; the model must not invent
+            # evidence or repeatedly call a state/tool endpoint during PROBE.
+            tool_definitions = []
         repeated_calls: dict[str, int] = {}
         for _ in range(self.max_iterations):
             response = self.client.complete(system_prompt=self.system_prompt, learning_state=state, learner_message=learner_message, tools=tool_definitions, conversation=conversation)
@@ -37,6 +42,9 @@ class TutorOrchestrator:
                         phase="PROBE",
                         message="Não consegui concluir a operação automaticamente. Vou reformular a próxima etapa com base no último erro.",
                     )
+                if phase in {"INTENT", "PROBE", "DIAGNOSE"} and call.name != "save_learning_evidence":
+                    results.append({"tool": call.name, "result": {"success": False, "retryable": False, "error": "Esta ferramenta só pode ser usada depois do diagnóstico."}})
+                    continue
                 try:
                     result = self.registry.dispatch(call.name, call.arguments)
                 except (KeyError, ValueError) as exc:

@@ -83,7 +83,7 @@ def test_orchestrator_hides_lab_mutations_during_probe():
 
     TutorOrchestrator(client, registry, "prompt").respond("Quero aprender Window Functions", {"phase": "PROBE"})
 
-    assert client.tools == ["load_learning_state"]
+    assert client.tools == []
 
 
 class FakeOpenAI:
@@ -149,3 +149,27 @@ def test_openai_client_retries_transient_provider_failure(monkeypatch):
     assert result.message == "ok"
     assert fake.calls == 3
     assert sleeps == [0.25, 0.5]
+
+
+def test_openai_client_maps_question_response_to_probe_message(monkeypatch):
+    response = SimpleNamespace(
+        choices=[SimpleNamespace(message=SimpleNamespace(content='{"question":"Qual é sua experiência?"}', tool_calls=None))]
+    )
+    monkeypatch.setattr(llm_client, "OpenAI", lambda **_: FakeOpenAI(response))
+
+    result = llm_client.OpenAIClient("model", "key").complete(system_prompt="", learning_state={}, learner_message="", tools=[])
+
+    assert result.phase == "PROBE"
+    assert result.message == "Qual é sua experiência?"
+
+
+def test_openai_client_replaces_empty_learner_response_with_probe(monkeypatch):
+    response = SimpleNamespace(
+        choices=[SimpleNamespace(message=SimpleNamespace(content='{"phase":"PRACTICE"}', tool_calls=None))]
+    )
+    monkeypatch.setattr(llm_client, "OpenAI", lambda **_: FakeOpenAI(response))
+
+    result = llm_client.OpenAIClient("model", "key").complete(system_prompt="", learning_state={}, learner_message="", tools=[])
+
+    assert result.phase == "PROBE"
+    assert result.message
