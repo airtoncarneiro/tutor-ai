@@ -16,17 +16,20 @@ def test_gui_renders_core_controls(monkeypatch):
 
 class DeterministicOpenAI:
     calls = 0
+    outcome = "strong"
 
     def __init__(self, **kwargs):
         self.chat = SimpleNamespace(completions=SimpleNamespace(create=self.create))
 
     def create(self, **kwargs):
         DeterministicOpenAI.calls += 1
+        correct = DeterministicOpenAI.outcome == "strong"
+        answer = "Domino" if correct else "Não sei"
         responses = [
             {"phase": "PROBE", "message": "Qual é sua experiência com GROUP BY?"},
-            {"phase": "PROBE", "message": "Evidência registrada.", "diagnostic_evidence": [{"concept_key": "group_by", "concept_name": "GROUP BY", "answer": "Domino", "correct": True, "confidence": 0.9}]},
-            {"phase": "PROBE", "message": "Evidência registrada.", "diagnostic_evidence": [{"concept_key": "granularity", "concept_name": "Granularidade", "answer": "Domino", "correct": True, "confidence": 0.9}]},
-            {"phase": "PROBE", "message": "Evidência registrada.", "diagnostic_evidence": [{"concept_key": "aggregation", "concept_name": "Agregação", "answer": "Domino", "correct": True, "confidence": 0.9}]},
+            {"phase": "PROBE", "message": "Evidência registrada.", "diagnostic_evidence": [{"concept_key": "group_by", "concept_name": "GROUP BY", "answer": answer, "correct": correct, "confidence": 0.9 if correct else 0.2}]},
+            {"phase": "PROBE", "message": "Evidência registrada.", "diagnostic_evidence": [{"concept_key": "granularity", "concept_name": "Granularidade", "answer": answer, "correct": correct, "confidence": 0.9 if correct else 0.2}]},
+            {"phase": "PROBE", "message": "Evidência registrada.", "diagnostic_evidence": [{"concept_key": "aggregation", "concept_name": "Agregação", "answer": answer, "correct": correct, "confidence": 0.9 if correct else 0.2}]},
         ]
         payload = responses[min(DeterministicOpenAI.calls - 1, len(responses) - 1)]
         message = SimpleNamespace(content=__import__("json").dumps(payload), tool_calls=None)
@@ -37,6 +40,7 @@ def test_gui_window_functions_flow_and_sql_evaluation(monkeypatch):
     monkeypatch.setenv("POSTGRES_PORT", "55432")
     monkeypatch.setattr(llm_client, "OpenAI", DeterministicOpenAI)
     DeterministicOpenAI.calls = 0
+    DeterministicOpenAI.outcome = "strong"
     app = AppTest.from_file(Path(__file__).parents[2] / "ui/streamlit_app.py", default_timeout=15).run()
 
     for answer in [
@@ -64,3 +68,22 @@ def test_gui_window_functions_flow_and_sql_evaluation(monkeypatch):
     app.text_area[0].set_value("SELECT coluna_inexistente FROM orders")
     next(item for item in app.button if item.label == "Executar SQL").click().run()
     assert any("does not exist" in item.value for item in app.error)
+
+
+def test_gui_weak_prerequisites_show_remediation_path(monkeypatch):
+    monkeypatch.setenv("POSTGRES_PORT", "55432")
+    monkeypatch.setattr(llm_client, "OpenAI", DeterministicOpenAI)
+    DeterministicOpenAI.calls = 0
+    DeterministicOpenAI.outcome = "weak"
+    app = AppTest.from_file(Path(__file__).parents[2] / "ui/streamlit_app.py", default_timeout=15).run()
+
+    for answer in [
+        "Quero aprender Window Functions",
+        "Não sei GROUP BY",
+        "Não sei granularidade",
+        "Não sei agregação",
+    ]:
+        app.chat_input[0].set_value(answer).run()
+
+    assert not app.exception
+    assert any("aggregation" in item.value for item in app.markdown)
