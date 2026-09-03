@@ -28,7 +28,7 @@ class PlanningService:
         concepts = self.repository.concepts(session_id)
         insufficient = [c for c in concepts if c.mastery < 0.5]
         partial = [c for c in concepts if 0.5 <= c.mastery < 0.8]
-        current = (insufficient[0] if insufficient else partial[0] if partial else concepts[0] if concepts else None)
+        current = insufficient[0] if insufficient else partial[0] if partial else None
         candidates = [{"concept": c.concept_key, "priority": round(1 - c.mastery, 3)} for c in concepts if c != current]
         path = {"current": current.concept_key if current else None, "next": sorted(candidates, key=lambda item: item["priority"], reverse=True)[:3], "near_future": [{"concept": "target_topic", "priority": 0.5}]}
         scenario = dict(session.scenario or {})

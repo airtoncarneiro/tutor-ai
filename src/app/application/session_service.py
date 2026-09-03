@@ -15,6 +15,19 @@ from app.tutor.orchestrator import TutorOrchestrator
 from app.observability import logger, start_correlation
 
 
+def _fallback_probe_evidence(message: str, evidence_count: int) -> dict[str, Any]:
+    """Compatibility fallback when a provider omits structured probe evidence."""
+    weak_markers = ("não sei", "nao sei", "não conheço", "nao conheco", "dificuldade", "confuso")
+    strong_markers = ("domino", "entendo", "sei explicar", "tenho experiência", "tenho experiencia")
+    lowered = message.lower()
+    weak = any(marker in lowered for marker in weak_markers)
+    strong = any(marker in lowered for marker in strong_markers)
+    correct = strong and not weak
+    concepts = [("group_by", "GROUP BY"), ("granularity", "Granularidade"), ("aggregation", "Agregação")]
+    concept_key, concept_name = concepts[evidence_count % len(concepts)]
+    return {"concept_key": concept_key, "concept_name": concept_name, "answer": message, "correct": correct, "reasoning_quality": 0.2 if weak or not strong else 0.9}
+
+
 class ApplicationSessionService:
     """Single application boundary for a persisted learner conversation."""
 
@@ -26,6 +39,7 @@ class ApplicationSessionService:
         logger.info("learner turn started correlation_id=%s", request_id)
         if not message.strip():
             raise ValueError("A mensagem do aluno não pode ser vazia")
+        existing_session = session_id is not None
         if session_id is None:
             session_id = DiagnosticService(self.repository).start(message).session_id
         state = LearningStateService(self.repository).load(session_id)
@@ -41,6 +55,10 @@ class ApplicationSessionService:
                 reasoning_quality=item.confidence,
                 answer=item.answer or message,
             )
+        if existing_session and response.phase == "PROBE" and not response.diagnostic_evidence:
+            probe_count = sum(1 for item in updated_state_evidence(self.repository, session_id) if item.evidence_type == "probe_answer")
+            fallback = _fallback_probe_evidence(message, probe_count)
+            diagnostic.record_probe(session_id, **fallback)
         self.repository.add_event(session_id, "TUTOR_RESPONSE", {"phase": response.phase, "message": response.message or ""})
         updated_state = self.state(session_id)
         if response.phase == "PROBE" and len(updated_state.get("recent_evidence", [])) >= 3:
@@ -65,6 +83,11 @@ class ApplicationSessionService:
         planner.provision_lab(session_id, LabService(self.database))
         self.repository.update_phase(session_id, "TEACH")
         return self.state(session_id)
+
+
+def updated_state_evidence(repository: LearningRepository, session_id: UUID):
+    """Small seam for counting persisted diagnostic evidence."""
+    return repository.recent_evidence(session_id, limit=100)
 
     def submit_sql(self, session_id: UUID, sql: str, concept_key: str, requirement_satisfaction: float = 0.0, semantics: float = 0.0, reasoning: float = 0.0, independent: bool = True) -> dict[str, Any]:
         if not sql.strip():
