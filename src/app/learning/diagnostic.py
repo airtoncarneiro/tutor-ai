@@ -5,11 +5,13 @@ from uuid import UUID, uuid4
 
 from app.persistence.models import LearningSession
 from app.persistence.repositories import LearningRepository
+from .probe import AdaptiveProbe, ProbeEvidence
 
 
 class DiagnosticService:
     def __init__(self, repository: LearningRepository) -> None:
         self.repository = repository
+        self.probe = AdaptiveProbe()
 
     def start(self, topic: str, goal: str | None = None) -> LearningSession:
         if not topic.strip():
@@ -43,3 +45,8 @@ class DiagnosticService:
         self.repository.update_phase(session_id, "DIAGNOSE")
         self.repository.add_event(session_id, "BASELINE_CREATED", {"concepts": baseline})
         return {"session_id": str(session_id), "concepts": baseline}
+
+    def probe_is_sufficient(self, session_id: UUID) -> bool:
+        evidence = self.repository.recent_evidence(session_id, limit=100)
+        probes = [ProbeEvidence(concept_key=str(item.concept_id or "unknown"), answer="", correct=(item.correctness or 0) >= .5, confidence=item.correctness or 0) for item in evidence if item.evidence_type == "probe_answer"]
+        return self.probe.sufficient(probes)

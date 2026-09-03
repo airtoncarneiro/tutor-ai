@@ -12,6 +12,7 @@ from app.persistence.database import Database
 from app.persistence.repositories import LearningRepository
 from app.tools.factory import create_registry
 from app.tutor.orchestrator import TutorOrchestrator
+from app.observability import logger, start_correlation
 
 
 class ApplicationSessionService:
@@ -21,6 +22,8 @@ class ApplicationSessionService:
         self.database, self.repository, self.client, self.prompt = database, repository, client, prompt
 
     def turn(self, message: str, session_id: UUID | None = None) -> tuple[UUID, TutorResponse]:
+        request_id = start_correlation()
+        logger.info("learner turn started correlation_id=%s", request_id)
         if not message.strip():
             raise ValueError("A mensagem do aluno não pode ser vazia")
         if session_id is None:
