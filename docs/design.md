@@ -101,6 +101,21 @@ The current implementation uses the Google AI Studio Gemini API through Google's
 
 The client uses Chat Completions rather than assuming the full OpenAI Responses API. It requests JSON output, validates it as `TutorResponse`, extracts function tool calls, and passes them to the deterministic Python Tool Registry. This compatibility layer is limited: OpenAI-specific parameters and hosted tools must not be assumed to work with Gemini. Provider-specific translation remains isolated in `src/app/llm/client.py`.
 
+### 3.1.1 Resilience policy
+
+`LLM_TIMEOUT_SECONDS` is the per-request timeout loaded from the environment.
+The client uses a bounded retry policy with exponential backoff for transient
+provider responses (`429`, `500`, `502`, `503` and `504`). The policy does not
+retry malformed requests, authentication failures or invalid structured output.
+When the retry budget is exhausted, the client raises a sanitized provider
+availability error that the Streamlit layer can present as retryable feedback.
+
+The timeout applies to each HTTP request; the tutor orchestrator also has a
+finite tool-iteration limit. Therefore, the worst-case duration of a learner
+turn must account for both the retry budget and the number of sequential tool
+iterations. Observability should record attempt count, duration and status
+without recording API keys or complete learner content.
+
 All interaction with the database occurs through tools.
 
 ---

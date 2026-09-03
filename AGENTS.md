@@ -252,8 +252,17 @@ Configuration is loaded from `.env`:
 - `LLM_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai/`;
 - `LLM_MODEL=gemma-4-26b-a4b-it` (or another model explicitly supported by the endpoint);
 - `LLM_API_KEY` contains the Google AI Studio key and must never be logged or committed.
+- `LLM_TIMEOUT_SECONDS` controls the per-request timeout and is configured in
+  `.env` (the local default is 45 seconds).
 
 The client uses Chat Completions, JSON structured output and local tool calls. Do not assume that every OpenAI-specific API, parameter or hosted tool is supported by Gemini's compatibility layer. Provider-specific behavior belongs in `src/app/llm/client.py`; the tutor orchestrator must depend on the internal `LLMClient` contract.
+
+LLM calls must be resilient to transient provider failures. The client SHALL
+apply bounded retries with exponential backoff for transient `429`, `500`,
+`502`, `503` and `504` responses, while respecting the configured timeout and
+never retrying malformed requests or validation failures. The UI SHALL expose a
+clear retryable error when the provider remains unavailable. Retries must not
+log the API key or complete learner payloads.
 
 Avoid speculative abstractions.
 

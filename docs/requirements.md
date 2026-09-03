@@ -512,6 +512,27 @@ Application behavior SHALL NOT depend on parsing arbitrary prose to identify too
 
 LLM/tool boundaries SHOULD use validated structured models.
 
+## 25.1 LLM resilience
+
+The LLM client SHALL load a configurable per-request timeout from
+`LLM_TIMEOUT_SECONDS` in the environment configuration.
+
+The LLM client SHALL use bounded retries with exponential backoff for transient
+provider failures, including HTTP `429`, `500`, `502`, `503` and `504`.
+
+The retry policy SHALL:
+
+- have a finite maximum number of attempts;
+- respect the configured request timeout;
+- avoid retrying malformed requests, invalid credentials or structured-output
+  validation failures;
+- expose a sanitized, actionable error when all attempts fail;
+- never log API keys or complete learner prompts/responses.
+
+The application SHALL remain responsive while an LLM request is pending and
+the GUI SHALL distinguish a transient provider failure from an invalid learner
+input or an application failure.
+
 The initial tool set SHALL support:
 
 - create lab;

@@ -978,6 +978,34 @@ Improve diagnostic selection and prerequisite investigation using structured evi
 
 Evaluate `google-genai` and migrate only if the compatibility endpoint is insufficient.
 
+## TASK-175 — Resilient LLM client
+
+Implement bounded provider-failure handling in `src/app/llm/client.py`.
+
+Scope:
+
+- load `LLM_TIMEOUT_SECONDS` from the typed environment configuration;
+- retry only transient `429`, `500`, `502`, `503` and `504` failures;
+- use exponential backoff with a finite attempt limit;
+- preserve `max_retries=0` in the underlying SDK and own the policy at the
+  application boundary;
+- classify authentication, malformed-request and structured-output failures as
+  non-retryable;
+- expose a sanitized error suitable for the Streamlit UI;
+- add unit tests for retry, exhaustion and non-retryable failures;
+- add an integration test using a fake transport/client so tests do not depend
+  on Gemini availability.
+
+Acceptance:
+
+- transient failures are retried within the configured budget;
+- non-transient failures are returned immediately;
+- the API key and complete learner payload never appear in logs or errors;
+- the GUI presents a clear retryable message when the provider is temporarily
+  unavailable;
+- the real Gemini smoke test remains optional and is never required for the
+  deterministic test suite.
+
 ## TASK-172 — Browser-level GUI tests
 
 Test Streamlit session continuity, SQL errors and adaptive progress through a browser.

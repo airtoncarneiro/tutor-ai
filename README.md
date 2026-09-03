@@ -38,9 +38,15 @@ LLM_PROVIDER=gemini
 LLM_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai/
 LLM_MODEL=gemma-4-26b-a4b-it
 LLM_API_KEY=sua_chave_do_google_ai_studio
+LLM_TIMEOUT_SECONDS=45
 ```
 
 O cliente usa Chat Completions, respostas JSON estruturadas e tool calls. A camada de compatibilidade do Gemini não garante suporte a todos os recursos específicos da OpenAI; recursos avançados devem ser verificados na documentação do Google antes de serem adicionados.
+
+Chamadas ao LLM devem ter resiliência a indisponibilidades transitórias do
+provedor. A política prevista usa tentativas limitadas e backoff exponencial
+para respostas HTTP 429, 500, 502, 503 e 504. Falhas de autenticação,
+requisições inválidas e respostas estruturadas inválidas não devem ser repetidas.
 
 ## Comandos de desenvolvimento
 
