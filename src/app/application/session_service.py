@@ -31,9 +31,20 @@ class ApplicationSessionService:
         state = LearningStateService(self.repository).load(session_id)
         self.repository.add_event(session_id, "LEARNER_MESSAGE", {"message": message})
         response = TutorOrchestrator(self.client, create_registry(self.database), self.prompt).respond(message, state)
+        diagnostic = DiagnosticService(self.repository)
+        for item in response.diagnostic_evidence:
+            diagnostic.record_probe(
+                session_id,
+                item.concept_key,
+                item.concept_name,
+                correct=item.correct,
+                reasoning_quality=item.confidence,
+                answer=item.answer or message,
+            )
         self.repository.add_event(session_id, "TUTOR_RESPONSE", {"phase": response.phase, "message": response.message or ""})
         updated_state = self.state(session_id)
         if response.phase == "PROBE" and len(updated_state.get("recent_evidence", [])) >= 3:
+            diagnostic.create_baseline(session_id)
             self.prepare_learning(session_id)
         return session_id, response
 
@@ -46,7 +57,10 @@ class ApplicationSessionService:
         planner = PlanningService(self.repository)
         scenario = state.get("scenario") or {}
         if not scenario:
-            scenario = planner.create_scenario(session_id, level="intermediate", target_capabilities=["partition data", "rank rows"], strengths=[], gaps=[], strategy={"preferred_exercises": ["BUILD", "DEBUG"]}, lab_requirements=["ties", "temporal ordering"], dependencies=[{"prerequisite": "aggregation", "concept": "window_semantics"}])
+            concepts = state.get("concepts", [])
+            strengths = [item["concept_key"] for item in concepts if item["mastery"] >= 0.8]
+            gaps = [item["concept_key"] for item in concepts if item["mastery"] < 0.5]
+            scenario = planner.create_scenario(session_id, level="beginner" if gaps else "intermediate", target_capabilities=["partition data", "rank rows"], strengths=strengths, gaps=gaps, strategy={"preferred_exercises": ["REMEDIATE", "BUILD"] if gaps else ["BUILD", "DEBUG"]}, lab_requirements=["ties", "temporal ordering"], dependencies=[{"prerequisite": "aggregation", "concept": "window_semantics"}])
         planner.build_path(session_id)
         planner.provision_lab(session_id, LabService(self.database))
         self.repository.update_phase(session_id, "TEACH")
