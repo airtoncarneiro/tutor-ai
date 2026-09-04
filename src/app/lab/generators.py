@@ -36,7 +36,9 @@ def scenario_key(topic: str) -> str:
         return "recursive"
     aliases = {
         "subqueries": ("subquer", "subconsulta"),
-        "aggregation": ("agrega", "grouping sets", "filter"),
+        # "agreg" also accepts common inflected forms and the typo
+        # "agregração" entered in the GUI.
+        "aggregation": ("agreg", "grouping sets", "filter"),
         "deduplication": ("dedup", "duplicat"),
         "transactions": ("transa", "commit", "rollback"),
         "date_functions": ("data", "date_trunc", "interval"),

@@ -28,6 +28,7 @@ def test_topics_select_their_pedagogical_lab():
     assert scenario_key("Quero aprender otimização") == "optimization"
     assert scenario_key("Quero aprender subqueries") == "subqueries"
     assert scenario_key("Quero aprender agregações avançadas") == "aggregation"
+    assert scenario_key("Quero aprender agregração") == "aggregation"
     assert scenario_key("Quero aprender deduplicação") == "deduplication"
     assert scenario_key("Quero aprender transações") == "transactions"
     assert scenario_key("Quero aprender funções de data") == "date_functions"
@@ -47,3 +48,5 @@ def test_extended_topics_have_executable_requirements():
     assert exercises_for("deduplicação")[0].concept == "deduplication"
     assert exercises_for("transações")[0].concept == "transactions"
     assert exercises_for("funções de data")[0].concept == "date_functions"
+    assert exercises_for("Window Functions")[0].concept == "window_semantics"
+    assert exercises_for("agregração")[0].concept == "advanced_aggregation"

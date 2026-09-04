@@ -137,6 +137,18 @@ def main() -> None:
             st.rerun()
         except Exception as exc:
             st.error(f"Falha ao preparar o laboratório: {exc}")
+
+    state = LearningStateService(repository).load(st.session_state.session_id)
+    exercises = (state.get("scenario") or {}).get("initial_exercises", [])
+    if exercises:
+        st.subheader("Exercício atual")
+        for exercise in exercises:
+            st.markdown(f"**Enunciado:** {exercise['instruction']}")
+            if exercise.get("requirement"):
+                st.caption(f"Requisito: {exercise['requirement']}")
+    else:
+        st.info("O tutor ainda está preparando o primeiro exercício.")
+
     sql = st.text_area("Escreva uma consulta SQL", height=150, key="sql_editor")
     concepts = []
     if st.session_state.session_id:

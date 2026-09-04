@@ -96,6 +96,13 @@ class ApplicationSessionService:
             scenario["diagnostic_summary"] = AdaptiveProbe().summary(probe_evidence)
             scenario["initial_exercises"] = [exercise.model_dump() for exercise in exercises_for(state["topic"])]
             self.repository.update_scenario(session_id, scenario)
+        elif not scenario.get("initial_exercises"):
+            # Backfill exercises for sessions created before the exercise
+            # catalog was exposed in the GUI.
+            scenario["initial_exercises"] = [
+                exercise.model_dump() for exercise in exercises_for(state["topic"])
+            ]
+            self.repository.update_scenario(session_id, scenario)
         planner.build_path(session_id)
         planner.provision_lab(session_id, LabService(self.database))
         self.repository.update_phase(session_id, "TEACH")
