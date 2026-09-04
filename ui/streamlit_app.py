@@ -85,11 +85,32 @@ def main() -> None:
         else:
             st.info("Inicie uma sessão para ver seu progresso.")
 
+    if not st.session_state.session_id:
+        st.subheader("Comece seu aprendizado")
+        st.write("Informe o tema de SQL que você quer aprender. O tutor fará algumas perguntas antes de criar seu plano de estudos.")
+        initial_topic = st.text_input("O que você quer aprender?", placeholder="Ex.: Window Functions")
+        if st.button("Iniciar aprendizado", type="primary"):
+            if not initial_topic.strip():
+                st.warning("Informe um tema para começar.")
+            else:
+                try:
+                    client = OpenAIClient(settings.llm_model, settings.llm_api_key.get_secret_value(), settings.llm_base_url, settings.llm_timeout_seconds)
+                    service = ApplicationSessionService(database, repository, client, load_prompt())
+                    st.session_state.session_id, response = service.turn(initial_topic, None)
+                    st.session_state.messages.extend([
+                        {"role": "user", "content": initial_topic},
+                        {"role": "assistant", "content": response.message or "O tutor iniciou o diagnóstico."},
+                    ])
+                    st.query_params["session_id"] = str(st.session_state.session_id)
+                    st.rerun()
+                except Exception as exc:
+                    st.error(f"Não foi possível iniciar o aprendizado: {exc}")
+
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
 
-    if prompt := st.chat_input("O que você quer aprender?"):
+    if st.session_state.session_id and (prompt := st.chat_input("Continue sua conversa com o tutor")):
         st.session_state.messages.append({"role": "user", "content": prompt})
         try:
             client = OpenAIClient(settings.llm_model, settings.llm_api_key.get_secret_value(), settings.llm_base_url, settings.llm_timeout_seconds)
@@ -102,9 +123,13 @@ def main() -> None:
         st.session_state.messages.append({"role": "assistant", "content": answer})
         st.rerun()
 
+    if not st.session_state.session_id:
+        st.info("O laboratório SQL aparecerá depois que você iniciar uma sessão de aprendizado.")
+        return
+
     st.divider()
     st.subheader("Laboratório SQL")
-    if st.session_state.session_id and st.button("Preparar cenário e laboratório"):
+    if st.button("Preparar cenário e laboratório"):
         try:
             service = ApplicationSessionService(database, repository, OpenAIClient(settings.llm_model, settings.llm_api_key.get_secret_value(), settings.llm_base_url, settings.llm_timeout_seconds), load_prompt())
             service.prepare_learning(st.session_state.session_id)

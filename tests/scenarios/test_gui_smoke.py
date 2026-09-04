@@ -10,8 +10,9 @@ def test_gui_renders_core_controls(monkeypatch):
     app = AppTest.from_file(Path(__file__).parents[2] / "ui/streamlit_app.py", default_timeout=10).run()
     assert not app.exception
     assert app.title[0].value == "Adaptive SQL Tutor AI"
-    assert any(item.label == "Executar SQL" for item in app.button)
-    assert any(item.label == "Escreva uma consulta SQL" for item in app.text_area)
+    assert any(item.label == "Iniciar aprendizado" for item in app.button)
+    assert any(item.label == "O que você quer aprender?" for item in app.text_input)
+    assert any("laboratório SQL aparecerá" in item.value for item in app.info)
 
 
 class DeterministicOpenAI:
@@ -43,12 +44,9 @@ def test_gui_window_functions_flow_and_sql_evaluation(monkeypatch):
     DeterministicOpenAI.outcome = "strong"
     app = AppTest.from_file(Path(__file__).parents[2] / "ui/streamlit_app.py", default_timeout=15).run()
 
-    for answer in [
-        "Quero aprender Window Functions",
-        "Domino GROUP BY",
-        "Domino granularidade",
-        "Domino agregação",
-    ]:
+    app.text_input[0].set_value("Quero aprender Window Functions")
+    next(item for item in app.button if item.label == "Iniciar aprendizado").click().run()
+    for answer in ["Domino GROUP BY", "Domino granularidade", "Domino agregação"]:
         app.chat_input[0].set_value(answer).run()
 
     assert not app.exception
@@ -77,12 +75,9 @@ def test_gui_weak_prerequisites_show_remediation_path(monkeypatch):
     DeterministicOpenAI.outcome = "weak"
     app = AppTest.from_file(Path(__file__).parents[2] / "ui/streamlit_app.py", default_timeout=15).run()
 
-    for answer in [
-        "Quero aprender Window Functions",
-        "Não sei GROUP BY",
-        "Não sei granularidade",
-        "Não sei agregação",
-    ]:
+    app.text_input[0].set_value("Quero aprender Window Functions")
+    next(item for item in app.button if item.label == "Iniciar aprendizado").click().run()
+    for answer in ["Não sei GROUP BY", "Não sei granularidade", "Não sei agregação"]:
         app.chat_input[0].set_value(answer).run()
 
     assert not app.exception
