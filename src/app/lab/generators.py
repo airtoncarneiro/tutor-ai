@@ -2,7 +2,9 @@ from .service import LabService
 from collections.abc import Callable
 
 from .models import LabDefinition
-from .scenarios import cte_lab, join_lab, null_lab, optimization_lab, recursive_lab
+from .scenarios import (advanced_aggregation_lab, cte_lab, date_functions_lab,
+                        deduplication_lab, join_lab, null_lab, optimization_lab,
+                        recursive_lab, subquery_lab, transactions_lab)
 from .specifications import LabSpecification, window_functions_specification
 
 
@@ -18,6 +20,11 @@ SCENARIO_GENERATORS: dict[str, Callable[[], LabDefinition]] = {
     "null": null_lab,
     "recursive": recursive_lab,
     "optimization": optimization_lab,
+    "subqueries": subquery_lab,
+    "aggregation": advanced_aggregation_lab,
+    "deduplication": deduplication_lab,
+    "transactions": transactions_lab,
+    "date_functions": date_functions_lab,
 }
 
 
@@ -25,6 +32,18 @@ def scenario_key(topic: str) -> str:
     lowered = topic.casefold()
     if "window" in lowered or "ranking" in lowered or "lag" in lowered:
         return "window_functions"
+    if "recurs" in lowered:
+        return "recursive"
+    aliases = {
+        "subqueries": ("subquer", "subconsulta"),
+        "aggregation": ("agrega", "grouping sets", "filter"),
+        "deduplication": ("dedup", "duplicat"),
+        "transactions": ("transa", "commit", "rollback"),
+        "date_functions": ("data", "date_trunc", "interval"),
+    }
+    for key, terms in aliases.items():
+        if any(term in lowered for term in terms):
+            return key
     for key in SCENARIO_GENERATORS:
         if key in lowered or (key == "null" and "nulo" in lowered) or (key == "optimization" and any(term in lowered for term in ("performance", "otimiza", "otimiz"))):
             return key

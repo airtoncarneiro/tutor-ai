@@ -5,6 +5,7 @@ from app.learning.diagnostic import DiagnosticService
 from app.learning.evaluation import EvaluationEvidence, EvaluationService
 from app.learning.planning import PlanningService
 from app.learning.probe import AdaptiveProbe, ProbeEvidence
+from app.learning.scenario_exercises import exercises_for
 from app.lab.service import LabService
 from app.learning.state_service import LearningStateService
 from app.llm.client import LLMClient
@@ -93,6 +94,7 @@ class ApplicationSessionService:
             ]
             scenario = planner.create_scenario(session_id, level="beginner" if gaps else "intermediate", target_capabilities=["partition data", "rank rows"], strengths=strengths, gaps=gaps, strategy={"preferred_exercises": ["REMEDIATE", "BUILD"] if gaps else ["BUILD", "DEBUG"]}, lab_requirements=["ties", "temporal ordering"], dependencies=[{"prerequisite": "aggregation", "concept": "window_semantics"}])
             scenario["diagnostic_summary"] = AdaptiveProbe().summary(probe_evidence)
+            scenario["initial_exercises"] = [exercise.model_dump() for exercise in exercises_for(state["topic"])]
             self.repository.update_scenario(session_id, scenario)
         planner.build_path(session_id)
         planner.provision_lab(session_id, LabService(self.database))
