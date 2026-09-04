@@ -170,6 +170,20 @@ Falhas temporárias do provedor são repetidas automaticamente dentro de um
 limite. Falhas de autenticação ou configuração precisam ser corrigidas no
 `.env`.
 
+Se aparecer `401 Missing Authentication header`, feche a execução atual e
+inicie o Streamlit em um terminal limpo. Uma variável `LLM_API_KEY` exportada
+anteriormente pode sobrescrever o valor do `.env` como o texto literal
+`${OPENROUTER_API_KEY}`:
+
+```bash
+unset LLM_API_KEY
+.venv/bin/streamlit run ui/streamlit_app.py
+```
+
+O aplicativo também resolve essa referência automaticamente quando a variável
+referenciada está disponível, mas é necessário reiniciar o processo depois de
+alterar a configuração.
+
 ### Quero executar os testes
 
 Com o PostgreSQL ativo, execute:
@@ -182,6 +196,9 @@ A suíte cobre o fluxo da aplicação, a interface Streamlit, os cenários SQL,
 execução de consultas, avaliação, persistência e recuperação de falhas.
 
 ## Para quem vai desenvolver
+
+Para um passo a passo visual da aplicação, consulte o
+[Guia visual do usuário](docs/user-guide.md).
 
 Os detalhes de requisitos, arquitetura, fases e decisões técnicas estão em:
 
