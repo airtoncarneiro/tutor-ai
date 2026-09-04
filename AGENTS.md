@@ -2,7 +2,7 @@
 
 ## Project
 
-Adaptive SQL Tutor.
+Adaptive SQL Tutor AI.
 
 A local Python application that uses an LLM to provide adaptive SQL learning with an executable PostgreSQL learning environment created dynamically according to the learner's diagnosed needs.
 
@@ -252,7 +252,7 @@ Configuration is loaded from `.env`:
 
 - `LLM_PROVIDER=openrouter`;
 - `LLM_BASE_URL=https://openrouter.ai/api/v1/`;
-- `LLM_MODEL=@preset/preset-free` (or another model explicitly supported by the endpoint);
+- `LLM_MODEL=modelo-llm` (or another model explicitly supported by the endpoint);
 - `LLM_API_KEY` contains the provider key and must never be logged or committed.
 - `LLM_TIMEOUT_SECONDS` controls the per-request timeout and is configured in
   `.env` (the local default is 45 seconds).

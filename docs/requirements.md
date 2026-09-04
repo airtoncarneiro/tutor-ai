@@ -1,4 +1,4 @@
-# Adaptive SQL Tutor — Requirements
+# Adaptive SQL Tutor AI — Requirements
 
 ## 1. Purpose
 

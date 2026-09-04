@@ -1,106 +1,194 @@
-# Adaptive SQL Tutor
+# Adaptive SQL Tutor AI
 
-Tutor local e adaptativo de SQL, com um laboratório executável em PostgreSQL e um LLM responsável pelo raciocínio pedagógico.
+O Adaptive SQL Tutor AI é uma aplicação local para aprender SQL com ajuda de
+inteligência artificial.
 
-## Requisitos
+Você informa o que deseja aprender, por exemplo `Quero aprender Window
+Functions`. O tutor faz algumas perguntas para entender seu nível, cria um
+laboratório PostgreSQL com dados de prática e acompanha sua evolução enquanto
+você escreve e executa consultas SQL.
 
-- Python 3.11+
-- Docker e Docker Compose
-- Streamlit
+## O que você precisa
 
-## Configuração e execução
+- Python 3.11 ou mais recente;
+- Docker Desktop ou Docker com Docker Compose;
+- uma chave de API de um provedor compatível com OpenAI.
+
+O projeto foi desenvolvido e validado localmente com Python, PostgreSQL,
+Docker e Streamlit.
+
+## Instalação rápida
+
+### 1. Clone o projeto
+
+Clone o repositório:
+
+```bash
+git clone https://github.com/airtoncarneiro/tutor-ai.git
+cd tutor-ai
+```
+
+### 2. Crie o ambiente Python
+
+```bash
+python3 -m venv .venv
+.venv/bin/pip install -e '.[dev]'
+```
+
+### 3. Configure o provedor de IA
+
+Crie o arquivo local de configuração:
 
 ```bash
 cp .env.example .env
-# preencha LLM_MODEL e LLM_API_KEY com os dados do Google AI Studio
-python -m venv .venv
-.venv/bin/pip install -e '.[dev]'
-docker compose up -d
-.venv/bin/adaptive-sql-tutor-migrate
-.venv/bin/pytest
-.venv/bin/adaptive-sql-tutor
 ```
 
-Para iniciar a interface gráfica local (Fase 14):
+Edite `.env` e informe o provedor, o modelo e a chave:
+
+```env
+LLM_PROVIDER=openrouter
+LLM_BASE_URL=https://openrouter.ai/api/v1/
+LLM_MODEL=modelo-llm
+LLM_API_KEY=sua_chave_aqui
+LLM_TIMEOUT_SECONDS=45
+```
+
+O cliente usa o SDK `openai` e o contrato compatível com OpenAI. O endpoint
+configurado pode ser trocado por outro compatível, desde que ele aceite
+Chat Completions, respostas JSON e chamadas de ferramentas.
+
+Não compartilhe o arquivo `.env` nem coloque sua chave no Git.
+
+### 4. Inicie o banco de dados
+
+```bash
+docker compose up -d
+```
+
+Esse comando inicia o PostgreSQL usado para guardar seu progresso e o
+laboratório de exercícios.
+
+### 5. Abra a aplicação
 
 ```bash
 .venv/bin/streamlit run ui/streamlit_app.py
 ```
 
-Este comando ficará disponível após a implementação da Fase 14.
+O Streamlit exibirá um endereço local, normalmente
+`http://localhost:8501`. Abra esse endereço no navegador.
 
-O PostgreSQL é exposto em `localhost:5432` por padrão. A configuração local
-atual usa o endpoint OpenAI-compatible do OpenRouter através do SDK `openai`.
-O mesmo cliente pode apontar para o endpoint compatível do Google Gemini. O
-modelo, o endpoint e a chave são carregados exclusivamente do `.env`.
+As tabelas necessárias são criadas automaticamente quando a aplicação inicia.
 
-Configuração esperada:
+## Como usar
 
-```env
-LLM_PROVIDER=openrouter
-LLM_BASE_URL=https://openrouter.ai/api/v1/
-LLM_MODEL=@preset/preset-free
-LLM_API_KEY=sua_chave_do_openrouter
-LLM_TIMEOUT_SECONDS=45
-```
+1. Digite o tema que deseja aprender no campo de conversa.
+2. Responda às perguntas de diagnóstico sem preocupação em errar.
+3. Aguarde o tutor criar o cenário e o laboratório.
+4. Leia a explicação e execute as consultas sugeridas.
+5. Escreva suas próprias consultas no editor SQL.
+6. Veja os resultados ou erros do PostgreSQL.
+7. Avalie a tentativa para registrar seu progresso.
 
-O cliente usa Chat Completions, respostas JSON estruturadas e tool calls. A camada de compatibilidade do Gemini não garante suporte a todos os recursos específicos da OpenAI; recursos avançados devem ser verificados na documentação do Google antes de serem adicionados.
+O tutor não começa ensinando imediatamente. Ele primeiro identifica seus
+conhecimentos e pode sugerir um caminho diferente para cada pessoa.
 
-Chamadas ao LLM devem ter resiliência a indisponibilidades transitórias do
-provedor. A política prevista usa tentativas limitadas e backoff exponencial
-para respostas HTTP 429, 500, 502, 503 e 504. Falhas de autenticação,
-requisições inválidas e respostas estruturadas inválidas não devem ser repetidas.
+## Temas disponíveis
 
-## Comandos de desenvolvimento
+O laboratório possui cenários pedagógicos para:
+
+- Window Functions;
+- JOIN;
+- CTE e CTE recursiva;
+- NULL;
+- subqueries;
+- agregações avançadas;
+- deduplicação;
+- transações em consultas somente leitura;
+- funções de data;
+- otimização de consultas sem índices ou `EXPLAIN`.
+
+Índices, `EXPLAIN`, modelagem e normalização não fazem parte do escopo atual.
+
+## Parar ou reiniciar o ambiente
+
+Para parar o PostgreSQL preservando os dados:
 
 ```bash
-# iniciar PostgreSQL
-docker compose up -d
+docker compose stop
+```
 
-# aplicar migrações
-.venv/bin/adaptive-sql-tutor-migrate
+Para parar e remover o container, mas preservar o volume:
 
-# executar aplicação
-.venv/bin/adaptive-sql-tutor
-
-# executar testes
-.venv/bin/pytest
-
-# parar PostgreSQL (preserva dados)
+```bash
 docker compose down
+```
 
-# resetar PostgreSQL local (remove o volume e os dados locais)
+Para apagar também os dados locais e começar do zero:
+
+```bash
 docker compose down -v
 ```
 
-## Estado atual da V1
+Use o último comando somente se quiser perder as sessões e o laboratório
+armazenados localmente.
 
-Implementados: persistência do estado de aprendizagem, diagnóstico, cenário contextual, trilha de curto horizonte, laboratório PostgreSQL dinâmico, exercícios executáveis, avaliação/mastery, evolução do lab, Apply/Transfer, integração OpenRouter/Gemini compatível, retry do LLM e recuperação de falhas de ferramentas.
+## Problemas comuns
 
-Cenários SQL disponíveis: Window Functions, JOIN, CTE, NULL, CTE recursiva,
-subqueries, agregações avançadas, deduplicação, transações, funções de data e
-otimização sem índices/`EXPLAIN`.
+### A aplicação não abre ou não encontra o PostgreSQL
 
-Limitações conhecidas: o fluxo ainda é uma base local de desenvolvimento e a
-cobertura end-to-end usa o cenário Window Functions como prova principal. Não
-há autenticação, multiusuário, infraestrutura cloud ou isolamento entre
-usuários.
+Verifique se o container está ativo:
 
-A Fase 15 — Integração Pedagógica Completa — foi concluída para o escopo V1;
-o serviço de sessão é o boundary único da GUI e a aceitação multi-turno está
-coberta por testes.
+```bash
+docker compose ps
+```
 
-A Fase 16 — Endurecimento e Validação da V1 — foi concluída para o escopo
-local. Retry, schemas, contexto de ferramentas, segurança do executor,
-recuperação de falhas, testes automatizados da GUI, avaliação SQL e divergência
-de caminhos estão cobertos.
+Se necessário, inicie-o novamente:
 
-A Fase 17 foi reservada para evolução pós-V1: diagnóstico mais sofisticado,
-testes de navegador, observabilidade avançada e novos cenários SQL. O projeto
-não manterá um SDK nativo Gemini; Gemini será acessado pela interface
-compatível com OpenAI. A Fase 17 não é necessária para a V1 local.
+```bash
+docker compose up -d
+```
 
-As TASKs 170, 173 e 174 possuem implementação inicial: diagnóstico com
-priorização de follow-up, observabilidade com redaction e seleção de laboratórios
-para cenários SQL adicionais. A TASK-171 foi encerrada como não aplicável, pois
-o projeto não manterá o SDK nativo Gemini.
+### A porta 5432 já está em uso
+
+Altere `POSTGRES_PORT` no `.env` para uma porta livre e execute novamente:
+
+```bash
+docker compose down
+docker compose up -d
+```
+
+### O tutor não responde
+
+Confira no `.env`:
+
+- `LLM_API_KEY` preenchida;
+- `LLM_BASE_URL` correto;
+- `LLM_MODEL` disponível no provedor;
+- `LLM_TIMEOUT_SECONDS` suficiente para o modelo.
+
+Falhas temporárias do provedor são repetidas automaticamente dentro de um
+limite. Falhas de autenticação ou configuração precisam ser corrigidas no
+`.env`.
+
+### Quero executar os testes
+
+Com o PostgreSQL ativo, execute:
+
+```bash
+.venv/bin/pytest -q
+```
+
+A suíte cobre o fluxo da aplicação, a interface Streamlit, os cenários SQL,
+execução de consultas, avaliação, persistência e recuperação de falhas.
+
+## Para quem vai desenvolver
+
+Os detalhes de requisitos, arquitetura, fases e decisões técnicas estão em:
+
+- [`docs/requirements.md`](docs/requirements.md);
+- [`docs/design.md`](docs/design.md);
+- [`docs/tasks.md`](docs/tasks.md);
+- [`AGENTS.md`](AGENTS.md).
+
+A aplicação é local e de usuário único. Não há autenticação, multiusuário,
+infraestrutura em nuvem ou arquitetura multiagente.

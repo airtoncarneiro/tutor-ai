@@ -1,4 +1,4 @@
-# Adaptive SQL Tutor — Technical Design
+# Adaptive SQL Tutor AI — Technical Design
 
 ## 1. Architecture
 

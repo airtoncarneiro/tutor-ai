@@ -1,4 +1,4 @@
-# Adaptive SQL Tutor — Implementation Tasks
+# Adaptive SQL Tutor AI — Implementation Tasks
 
 ## Working Method
 
