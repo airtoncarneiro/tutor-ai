@@ -67,6 +67,10 @@ The system SHALL accept natural-language requests such as:
 
 `Quero aprender otimização de queries`
 
+The application may also provide focused scenarios for subqueries, advanced
+aggregations, deduplication, transactions and date functions. Index/EXPLAIN
+training and modeling/normalization are outside the current product scope.
+
 The requested subject SHALL be interpreted as an initial learning intent rather than a predefined course.
 
 ---

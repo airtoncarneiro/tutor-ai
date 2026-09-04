@@ -77,6 +77,10 @@ docker compose down -v
 
 Implementados: persistência do estado de aprendizagem, diagnóstico, cenário contextual, trilha de curto horizonte, laboratório PostgreSQL dinâmico, exercícios executáveis, avaliação/mastery, evolução do lab, Apply/Transfer, integração OpenRouter/Gemini compatível, retry do LLM e recuperação de falhas de ferramentas.
 
+Cenários SQL disponíveis: Window Functions, JOIN, CTE, NULL, CTE recursiva,
+subqueries, agregações avançadas, deduplicação, transações, funções de data e
+otimização sem índices/`EXPLAIN`.
+
 Limitações conhecidas: o fluxo ainda é uma base local de desenvolvimento e a
 cobertura end-to-end usa o cenário Window Functions como prova principal. Não
 há autenticação, multiusuário, infraestrutura cloud ou isolamento entre

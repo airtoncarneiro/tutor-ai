@@ -1063,7 +1063,7 @@ Validation evidence:
 
 ## Current V1 validation status
 
-The deterministic suite has 43 passing tests. The real OpenRouter smoke test
+The deterministic suite has 52 passing tests. The real OpenRouter smoke test
 authenticates and returns structured/tool responses. The full learner turn is
 protected against malformed lab/tool calls and repeated loops, but the
 integrated GUI acceptance is covered by the deterministic Streamlit application
@@ -1104,10 +1104,15 @@ payloads are not logged.
 
 ## TASK-174 — Extended learning scenarios
 
-Add generators and acceptance scenarios for JOIN, CTE, NULL, recursive queries and optimization.
+Add generators and acceptance scenarios for JOIN, CTE, NULL, recursive queries,
+subqueries, advanced aggregations, deduplication, transactions and date
+functions.
 
-Implemented with pedagogical lab definitions and topic-based selection for
-JOIN, CTE, NULL, recursive CTE and optimization/performance. The existing
-Window Functions generator remains the default for its topic.
+Implemented with pedagogical lab definitions, topic-based selection and
+initial executable requirements for JOIN, CTE, NULL, recursive CTE,
+optimization/performance, subqueries, advanced aggregations, deduplication,
+transactions and date functions. Transaction exercises remain read-only to
+respect the SQL executor safety boundary. Index/EXPLAIN and modelagem/
+normalização were intentionally excluded from this scope.
 
 Phase 17 is not required for the local single-user V1.
