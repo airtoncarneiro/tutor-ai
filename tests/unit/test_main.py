@@ -7,5 +7,4 @@ def test_main_starts(monkeypatch, capsys) -> None:
 
     main()
 
-    assert "Adaptive SQL Tutor iniciado" in capsys.readouterr().out
-
+    assert "Adaptive SQL Tutor AI iniciado" in capsys.readouterr().out

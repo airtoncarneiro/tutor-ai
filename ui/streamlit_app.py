@@ -1,4 +1,4 @@
-"""Local graphical interface for the Adaptive SQL Tutor."""
+"""Local graphical interface for the Adaptive SQL Tutor AI."""
 
 import streamlit as st
 from uuid import UUID
@@ -25,8 +25,8 @@ def services():
 
 
 def main() -> None:
-    st.set_page_config(page_title="Adaptive SQL Tutor", layout="wide")
-    st.title("Adaptive SQL Tutor")
+    st.set_page_config(page_title="Adaptive SQL Tutor AI", layout="wide")
+    st.title("Adaptive SQL Tutor AI")
     settings, database, repository = services()
 
     if "messages" not in st.session_state:

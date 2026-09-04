@@ -1,2 +1,1 @@
-"""Adaptive SQL Tutor application package."""
-
+"""Adaptive SQL Tutor AI application package."""
