@@ -6,6 +6,7 @@ from app.learning.evaluation import EvaluationEvidence, EvaluationService
 from app.learning.planning import PlanningService
 from app.learning.probe import AdaptiveProbe, ProbeEvidence
 from app.learning.scenario_exercises import exercises_for
+from app.lab.generators import scenario_key
 from app.lab.service import LabService
 from app.learning.state_service import LearningStateService
 from app.llm.client import LLMClient
@@ -43,8 +44,14 @@ class ApplicationSessionService:
             raise ValueError("A mensagem do aluno não pode ser vazia")
         existing_session = session_id is not None
         if session_id is None:
-            session_id = DiagnosticService(self.repository).start(message).session_id
+            topic = self._resolve_topic(message)
+            session_id = DiagnosticService(self.repository).start(topic).session_id
         state = LearningStateService(self.repository).load(session_id)
+        if state.get("phase") not in {"INTENT", "PROBE", "DIAGNOSE"}:
+            try:
+                state["lab_context"] = LabService(self.database).inspect().model_dump(mode="json")
+            except Exception as exc:
+                logger.info("lab context unavailable: %s", type(exc).__name__)
         self.repository.add_event(session_id, "LEARNER_MESSAGE", {"message": message})
         response = TutorOrchestrator(self.client, create_registry(self.database), self.prompt).respond(message, state)
         diagnostic = DiagnosticService(self.repository)
@@ -68,6 +75,18 @@ class ApplicationSessionService:
             diagnostic.create_baseline(session_id)
             self.prepare_learning(session_id)
         return session_id, response
+
+    def _resolve_topic(self, message: str) -> str:
+        """Return a supported canonical topic, using the LLM only when needed."""
+        try:
+            return scenario_key(message)
+        except ValueError:
+            resolver = getattr(self.client, "resolve_topic", None)
+            if resolver is not None:
+                resolved = resolver(message)
+                if resolved:
+                    return resolved
+            return message
 
     def state(self, session_id: UUID) -> dict[str, Any]:
         return LearningStateService(self.repository).load(session_id)
@@ -103,6 +122,18 @@ class ApplicationSessionService:
                 exercise.model_dump() for exercise in exercises_for(state["topic"])
             ]
             self.repository.update_scenario(session_id, scenario)
+        exercise_concepts = {
+            exercise.get("concept")
+            for exercise in scenario.get("initial_exercises", [])
+            if exercise.get("concept")
+        }
+        known_concepts = {concept.concept_key for concept in self.repository.concepts(session_id)}
+        for concept_key in exercise_concepts - known_concepts:
+            self.repository.upsert_concept(
+                session_id,
+                concept_key,
+                concept_key.replace("_", " ").title(),
+            )
         planner.build_path(session_id)
         planner.provision_lab(session_id, LabService(self.database))
         self.repository.update_phase(session_id, "TEACH")
@@ -112,7 +143,37 @@ class ApplicationSessionService:
         if not sql.strip():
             raise ValueError("A consulta SQL não pode ser vazia")
         result = LabService(self.database).execute(sql)
-        evaluation = EvaluationService(self.repository).evaluate(session_id, EvaluationEvidence(concept_key=concept_key, syntax=result.success, execution=result.success, semantics=semantics if result.success else 0.0, requirement_satisfaction=requirement_satisfaction, reasoning=reasoning, independent=independent))
+        state = self.state(session_id)
+        exercise = ((state.get("scenario") or {}).get("initial_exercises") or [])
+        exercise_text = exercise[0].get("instruction", "") if exercise else ""
+        assessment = None
+        assessor = getattr(self.client, "assess_sql", None)
+        if assessor is not None:
+            try:
+                assessment = assessor(
+                    exercise=exercise_text,
+                    sql=sql,
+                    result=result.model_dump(mode="json"),
+                )
+            except Exception as exc:
+                logger.info("automatic SQL assessment unavailable: %s", type(exc).__name__)
+        if concept_key not in {concept.concept_key for concept in self.repository.concepts(session_id)}:
+            self.repository.upsert_concept(
+                session_id,
+                concept_key,
+                concept_key.replace("_", " ").title(),
+            )
+        evaluation = EvaluationService(self.repository).evaluate(session_id, EvaluationEvidence(
+            concept_key=concept_key,
+            syntax=result.success,
+            execution=result.success,
+            semantics=assessment.semantics if assessment else (semantics if result.success else 0.0),
+            requirement_satisfaction=assessment.requirement_satisfaction if assessment else requirement_satisfaction,
+            reasoning=assessment.reasoning if assessment else reasoning,
+            independent=independent,
+            feedback=assessment.feedback if assessment else None,
+        ))
         evaluation["sql"] = sql
         evaluation["result"] = result.model_dump(mode="json")
+        evaluation["feedback"] = assessment.feedback if assessment else None
         return evaluation

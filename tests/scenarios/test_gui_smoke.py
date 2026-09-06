@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -6,7 +7,7 @@ from streamlit.testing.v1 import AppTest
 
 
 def test_gui_renders_core_controls(monkeypatch):
-    monkeypatch.setenv("POSTGRES_PORT", "55432")
+    monkeypatch.setenv("POSTGRES_PORT", os.environ.get("TEST_POSTGRES_PORT", "5432"))
     app = AppTest.from_file(Path(__file__).parents[2] / "ui/streamlit_app.py", default_timeout=10).run()
     assert not app.exception
     assert app.title[0].value == "Adaptive SQL Tutor AI"
@@ -38,7 +39,7 @@ class DeterministicOpenAI:
 
 
 def test_gui_window_functions_flow_and_sql_evaluation(monkeypatch):
-    monkeypatch.setenv("POSTGRES_PORT", "55432")
+    monkeypatch.setenv("POSTGRES_PORT", os.environ.get("TEST_POSTGRES_PORT", "5432"))
     monkeypatch.setattr(llm_client, "OpenAI", DeterministicOpenAI)
     DeterministicOpenAI.calls = 0
     DeterministicOpenAI.outcome = "strong"
@@ -46,6 +47,8 @@ def test_gui_window_functions_flow_and_sql_evaluation(monkeypatch):
 
     app.text_input[0].set_value("Quero aprender Window Functions")
     next(item for item in app.button if item.label == "Iniciar aprendizado").click().run()
+    assert any("Diagnóstico em andamento" in item.value for item in app.subheader)
+    assert not any(item.label == "Executar SQL" for item in app.button)
     for answer in ["Domino GROUP BY", "Domino granularidade", "Domino agregação"]:
         app.chat_input[0].set_value(answer).run()
 
@@ -69,7 +72,7 @@ def test_gui_window_functions_flow_and_sql_evaluation(monkeypatch):
 
 
 def test_gui_weak_prerequisites_show_remediation_path(monkeypatch):
-    monkeypatch.setenv("POSTGRES_PORT", "55432")
+    monkeypatch.setenv("POSTGRES_PORT", os.environ.get("TEST_POSTGRES_PORT", "5432"))
     monkeypatch.setattr(llm_client, "OpenAI", DeterministicOpenAI)
     DeterministicOpenAI.calls = 0
     DeterministicOpenAI.outcome = "weak"

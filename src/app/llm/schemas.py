@@ -23,3 +23,14 @@ class TutorResponse(BaseModel):
     current_concept: str | None = None
     tool_calls: list[ToolCall] = Field(default_factory=list)
     diagnostic_evidence: list[DiagnosticEvidence] = Field(default_factory=list)
+    semantics: float | str | None = None
+    requirement_satisfaction: float | str | None = None
+    reasoning: float | str | None = None
+    feedback: str | None = None
+
+
+class SqlAssessment(BaseModel):
+    semantics: float = Field(ge=0, le=1)
+    requirement_satisfaction: float = Field(ge=0, le=1)
+    reasoning: float = Field(ge=0, le=1)
+    feedback: str

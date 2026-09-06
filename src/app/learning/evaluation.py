@@ -15,6 +15,7 @@ class EvaluationEvidence(BaseModel):
     reasoning: float = Field(ge=0, le=1)
     difficulty: Literal["easy", "medium", "hard"] = "medium"
     independent: bool = True
+    feedback: str | None = None
 
     @property
     def correctness(self) -> float:
@@ -54,4 +55,3 @@ class EvaluationService:
         action = "advance" if mastery >= 0.8 else "practice" if mastery >= 0.5 else "remediate"
         self.repository.add_event(session_id, "PATH_CHANGED", {"concept": concept.concept_key, "action": action})
         return {"concept": updated.model_dump(mode="json"), "evidence": saved.model_dump(mode="json"), "next_action": action}
-

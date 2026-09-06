@@ -38,7 +38,7 @@ def scenario_key(topic: str) -> str:
         "subqueries": ("subquer", "subconsulta"),
         # "agreg" also accepts common inflected forms and the typo
         # "agregração" entered in the GUI.
-        "aggregation": ("agreg", "grouping sets", "filter"),
+        "aggregation": ("agreg", "group by", "groupby", "grouping sets", "filter"),
         "deduplication": ("dedup", "duplicat"),
         "transactions": ("transa", "commit", "rollback"),
         "date_functions": ("data", "date_trunc", "interval"),

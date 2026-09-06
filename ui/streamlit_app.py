@@ -127,6 +127,13 @@ def main() -> None:
         st.info("O laboratório SQL aparecerá depois que você iniciar uma sessão de aprendizado.")
         return
 
+    state = LearningStateService(repository).load(st.session_state.session_id)
+    if state.get("phase") in {"INTENT", "PROBE", "DIAGNOSE"}:
+        st.divider()
+        st.subheader("Diagnóstico em andamento")
+        st.info("Responda às perguntas do tutor acima. O enunciado e o laboratório SQL aparecerão após o diagnóstico.")
+        return
+
     st.divider()
     st.subheader("Laboratório SQL")
     if st.button("Preparar cenário e laboratório"):
@@ -138,7 +145,6 @@ def main() -> None:
         except Exception as exc:
             st.error(f"Falha ao preparar o laboratório: {exc}")
 
-    state = LearningStateService(repository).load(st.session_state.session_id)
     exercises = (state.get("scenario") or {}).get("initial_exercises", [])
     if exercises:
         st.subheader("Exercício atual")
@@ -149,11 +155,39 @@ def main() -> None:
     else:
         st.info("O tutor ainda está preparando o primeiro exercício.")
 
+    st.subheader("Estrutura disponível no laboratório")
+    try:
+        lab_summary = LabService(database).inspect()
+        if not lab_summary.tables:
+            st.info("O laboratório ainda não possui tabelas. Prepare o cenário para continuar.")
+        for table in lab_summary.tables:
+            with st.expander(f"Tabela lab.{table.name}", expanded=True):
+                st.dataframe(
+                    [
+                        {"coluna": column.name, "tipo": column.data_type, "aceita nulo": column.nullable}
+                        for column in table.columns
+                    ],
+                    use_container_width=True,
+                    hide_index=True,
+                )
+                if table.sample_rows:
+                    st.caption("Amostra dos dados disponíveis")
+                    st.dataframe(
+                        [dict(zip((column.name for column in table.columns), row)) for row in table.sample_rows],
+                        use_container_width=True,
+                        hide_index=True,
+                    )
+    except Exception as exc:
+        st.warning(f"Não foi possível consultar a estrutura do laboratório: {exc}")
+
     sql = st.text_area("Escreva uma consulta SQL", height=150, key="sql_editor")
     concepts = []
     if st.session_state.session_id:
         concepts = LearningStateService(repository).load(st.session_state.session_id)["concepts"]
-    concept_key = st.selectbox("Conceito avaliado", [c["concept_key"] for c in concepts] or ["window_semantics"])
+    concept_options = [c["concept_key"] for c in concepts] or ["window_semantics"]
+    exercise_concept = exercises[0].get("concept") if exercises else None
+    selected_index = concept_options.index(exercise_concept) if exercise_concept in concept_options else 0
+    concept_key = st.selectbox("Conceito avaliado", concept_options, index=selected_index)
     semantics = st.slider("Semântica correta", 0.0, 1.0, 0.0, 0.1)
     requirement = st.slider("Atendimento ao requisito", 0.0, 1.0, 0.0, 0.1)
     reasoning = st.slider("Qualidade do raciocínio", 0.0, 1.0, 0.0, 0.1)
@@ -180,6 +214,14 @@ def main() -> None:
                 service = ApplicationSessionService(database, repository, OpenAIClient(settings.llm_model, settings.llm_api_key.get_secret_value(), settings.llm_base_url, settings.llm_timeout_seconds), load_prompt())
                 evaluation = service.submit_sql(st.session_state.session_id, st.session_state.last_sql, concept_key, requirement, semantics, reasoning)
                 st.success(f"Avaliação registrada. Próxima ação: {evaluation['next_action']}")
+                if evaluation.get("feedback"):
+                    st.info(f"Feedback do tutor: {evaluation['feedback']}")
+                action_labels = {
+                    "remediate": "Revisar o conceito antes de avançar",
+                    "practice": "Praticar novamente este conceito",
+                    "advance": "Avançar para o próximo conceito",
+                }
+                st.caption(action_labels.get(evaluation["next_action"], "Continue seguindo a orientação do tutor."))
             except Exception as exc:
                 st.error(f"Falha ao avaliar: {exc}")
 

@@ -3,6 +3,8 @@
 import re
 from typing import Iterable
 
+from psycopg import sql as psycopg_sql
+
 from app.persistence.database import Database
 
 from .models import LabDefinition, LabSummary, LabTable, LabColumn, SqlResult
@@ -116,8 +118,13 @@ class LabService:
             for (name,) in tables:
                 columns = conn.execute("""SELECT column_name, data_type, is_nullable='YES'
                     FROM information_schema.columns WHERE table_schema='lab' AND table_name=%s ORDER BY ordinal_position""", (name,)).fetchall()
+                sample = conn.execute(
+                    psycopg_sql.SQL("SELECT * FROM lab.{} LIMIT 5").format(
+                        psycopg_sql.Identifier(name)
+                    )
+                ).fetchall()
                 pks = conn.execute("""SELECT a.attname FROM pg_index i JOIN pg_attribute a ON a.attrelid=i.indrelid
                     AND a.attnum=ANY(i.indkey) WHERE i.indrelid=%s::regclass AND i.indisprimary""", (f'lab.{name}',)).fetchall()
                 indexes = conn.execute("SELECT indexname FROM pg_indexes WHERE schemaname='lab' AND tablename=%s ORDER BY indexname", (name,)).fetchall()
-                result.append(LabTable(name=name, columns=[LabColumn(name=c[0], data_type=c[1], nullable=c[2]) for c in columns], primary_key=[p[0] for p in pks], indexes=[i[0] for i in indexes]))
+                result.append(LabTable(name=name, columns=[LabColumn(name=c[0], data_type=c[1], nullable=c[2]) for c in columns], sample_rows=[list(row) for row in sample], primary_key=[p[0] for p in pks], indexes=[i[0] for i in indexes]))
         return LabSummary(tables=result)

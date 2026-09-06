@@ -14,7 +14,7 @@ def exercises_for(topic: str) -> list[SqlExercise]:
         )]
     if "subquer" in lowered:
         return [SqlExercise(mode="BUILD", concept="subqueries", instruction="Encontre clientes que possuem ao menos um pedido acima de 100 usando uma subquery.", requirement="filtrar clientes com EXISTS ou IN")]
-    if "agreg" in lowered:
+    if "agreg" in lowered or "group by" in lowered or "groupby" in lowered:
         return [SqlExercise(mode="BUILD", concept="advanced_aggregation", instruction="Calcule o total por região e categoria e inclua o total geral.", requirement="usar GROUPING SETS ou uma estratégia equivalente")]
     if "dedup" in lowered or "duplicat" in lowered:
         return [SqlExercise(mode="BUILD", concept="deduplication", instruction="Retorne somente o evento mais recente por cliente e tipo.", requirement="usar ROW_NUMBER ou DISTINCT ON com ordenação temporal")]

@@ -124,8 +124,11 @@ O componente possui:
 - **Preparar cenário e laboratório**: cria ou restaura o laboratório do tópico;
 - **Exercício atual**: mostra o enunciado que deve ser resolvido e o requisito
   mínimo da consulta. Leia este bloco antes de escrever SQL;
+- **Estrutura disponível no laboratório**: mostra as tabelas `lab`, suas
+  colunas, tipos e uma pequena amostra dos dados;
 - **Escreva uma consulta SQL**: editor para SQL escrito pelo aluno;
 - **Conceito avaliado**: conceito ao qual a tentativa será associada;
+  normalmente ele já vem selecionado de acordo com o exercício atual;
 - **Semântica correta**: avaliação da lógica da consulta;
 - **Atendimento ao requisito**: quanto a consulta atende ao pedido;
 - **Qualidade do raciocínio**: qualidade da explicação ou justificativa;
@@ -148,6 +151,10 @@ Depois de executar uma consulta válida, a tela apresenta:
 
 O resultado real permanece disponível na sessão para que a avaliação considere
 não apenas o texto SQL, mas também o que a consulta realmente produziu.
+
+Ao avaliar, o tutor recebe o enunciado, a consulta enviada e o resultado real
+do PostgreSQL. A interface mostra o feedback e uma orientação explícita para
+revisar, praticar novamente ou avançar.
 
 Exemplo usado no fluxo de Window Functions:
 

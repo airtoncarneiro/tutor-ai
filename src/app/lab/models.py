@@ -24,6 +24,7 @@ class LabColumn(BaseModel):
 class LabTable(BaseModel):
     name: str
     columns: list[LabColumn]
+    sample_rows: list[list[object]] = Field(default_factory=list)
     primary_key: list[str] = Field(default_factory=list)
     foreign_keys: list[dict[str, object]] = Field(default_factory=list)
     indexes: list[str] = Field(default_factory=list)
@@ -31,4 +32,3 @@ class LabTable(BaseModel):
 
 class LabSummary(BaseModel):
     tables: list[LabTable] = Field(default_factory=list)
-

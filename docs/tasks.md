@@ -1116,3 +1116,47 @@ respect the SQL executor safety boundary. Index/EXPLAIN and modelagem/
 normalização were intentionally excluded from this scope.
 
 Phase 17 is not required for the local single-user V1.
+
+# Phase 18 — Tutor Context and Evaluation UX
+
+## TASK-180 — Hybrid topic resolution
+
+Use deterministic aliases for known topics and a closed-set LLM classifier as
+a fallback for natural-language requests that do not match an alias. Python
+must validate the canonical topic before selecting a lab generator.
+
+Status: implemented. Known aliases such as `GROUP BY`, `agregação` and
+`Window Functions` resolve deterministically; unknown requests may use the
+OpenAI-compatible LLM boundary and unsupported results remain unprovisioned.
+
+## TASK-181 — Automatic SQL assessment
+
+After PostgreSQL execution, send the exercise, learner SQL and actual result or
+error to the LLM for structured assessment of semantics, requirement
+satisfaction, reasoning and feedback. Keep manual values as a safe fallback
+when the provider does not return the assessment contract.
+
+Status: implemented.
+
+## TASK-182 — Laboratory context in tutor turns
+
+Expose the current lab schema and compact sample data to the tutor after the
+diagnostic phase, without granting direct database access or provisioning
+authority to the LLM.
+
+Status: implemented.
+
+## TASK-183 — Explicit next-action feedback
+
+Show the evaluation feedback and translate `remediate`, `practice` and
+`advance` into learner-facing guidance.
+
+Status: implemented.
+
+## TASK-184 — Validation
+
+Acceptance requires the full deterministic suite, a real PostgreSQL lab
+inspection and an OpenAI-compatible structured-output smoke test. Provider
+availability remains external to the deterministic suite.
+
+Status: implemented and validated with 55 passing tests.

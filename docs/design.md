@@ -95,6 +95,18 @@ One primary LLM performs:
 
 The LLM does not directly access PostgreSQL.
 
+Learning requests use a hybrid resolver. Python first maps known aliases to a
+canonical supported topic. When no deterministic alias matches, the LLM may
+classify the request into a closed set of supported topics; Python validates
+the result before selecting a lab generator. The LLM never receives authority
+to execute arbitrary provisioning SQL.
+
+For SQL evaluation, Python executes the learner query first and sends the
+exercise, submitted SQL and actual result/error to the LLM for structured
+assessment. If the assessment is unavailable, the application uses the
+explicit manual fallback values and records that automatic assessment was not
+available.
+
 ## 3.1 Current Gemini implementation
 
 The current local configuration uses OpenRouter through its OpenAI-compatible

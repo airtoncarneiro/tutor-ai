@@ -1,3 +1,5 @@
+import os
+
 import pytest
 
 from app.config import Settings
@@ -19,7 +21,7 @@ from app.persistence.database import Database
     ],
 )
 def test_extended_topic_provisions_real_lab(monkeypatch, topic, expected_table):
-    monkeypatch.setenv("POSTGRES_PORT", "55432")
+    monkeypatch.setenv("POSTGRES_PORT", os.environ.get("TEST_POSTGRES_PORT", "5432"))
     settings = Settings()
     database = Database(settings.postgres_dsn)
     database.migrate()
